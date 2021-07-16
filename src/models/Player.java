@@ -8,12 +8,13 @@ public class Player {
 	public static final int Y_MOVE_SIZE = 5;
 	public static final int WIDTH = 25;
 	public static final int HEIGTH = 50;
+	public static final Point STARTING_POSITION = new Point(Game.MAP_WIDTH / 3, Game.MAP_HIGTH / 2);
 	private boolean isAlive;
 	private Point position;
 	private boolean isDown;
 
-	public Player(Point position) {
-		this.position = position;
+	public Player() {
+		this.position = STARTING_POSITION;
 		this.isDown = true;
 		isAlive = true;
 	}

@@ -4,4 +4,6 @@ import java.awt.Point;
 
 public interface IGame {
 	public Point getPlayerPosition();
+
+	public Platform[] getPlatforms();
 }
