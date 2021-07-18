@@ -3,6 +3,7 @@ package views;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyListener;
 
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 
 import models.Game;
@@ -20,7 +21,7 @@ public class MainFrame extends JFrame {
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setSize(Game.MAP_WIDTH, Game.MAP_HIGTH);
 		this.setResizable(false);
-//		this.setIconImage(new ImageIcon("").getImage());
+		this.setIconImage(new ImageIcon(getClass().getResource("/res/gravityIcon.png")).getImage());
 		this.setLocationRelativeTo(null);
 		this.setVisible(true);
 	}
