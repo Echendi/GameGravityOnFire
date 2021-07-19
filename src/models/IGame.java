@@ -12,4 +12,6 @@ public interface IGame {
 
 	public Platform[] getCeilling();
 
+	public int[] getTime();
+
 }

@@ -20,7 +20,7 @@ public class Presenter extends KeyAdapter implements ActionListener {
 	}
 
 	private void updateUi() {
-		final Timer timerUpdate = new Timer(1, e -> {
+		final Timer timerUpdate = new Timer(10, e -> {
 			view.refreshGame(game);
 		});
 		timerUpdate.start();

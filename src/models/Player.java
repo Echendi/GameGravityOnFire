@@ -10,7 +10,7 @@ public class Player {
 	public static final int Y_MOVE_SIZE = 3;
 	public static final int WIDTH = 25;
 	public static final int HEIGTH = 50;
-	public static final Point STARTING_POSITION = new Point(Game.MAP_WIDTH / 2, Game.MAP_HIGTH / 2);
+	public static final Point STARTING_POSITION = new Point(Game.MAP_WIDTH / 2, 0);
 	private boolean isColliding;
 	private boolean isFrontColliding;
 //	private boolean isAlive;
@@ -51,7 +51,8 @@ public class Player {
 	}
 
 	private boolean checkLimits() {
-		return (isDown && position.y + HEIGTH + (Y_MOVE_SIZE * 13) < Game.MAP_HIGTH)
+		return (isDown && position.y + HEIGTH
+				+ (Y_MOVE_SIZE * 13) < Game.MAP_HIGTH)
 				|| (!isDown && position.y - X_MOVE_SIZE > 0);
 	}
 

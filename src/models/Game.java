@@ -18,6 +18,7 @@ public class Game extends Thread implements IGame {
 	private ArrayList<Platform> platforms;
 	private ArrayList<Platform> floor;
 	private ArrayList<Platform> ceilling;
+	private Chronometer chronometer;
 	private boolean play;
 	private int platformCollision;
 	private int platformForntCollision;
@@ -27,6 +28,8 @@ public class Game extends Thread implements IGame {
 	private int ceillingFrontCollision;
 
 	public Game() {
+		chronometer = new Chronometer();
+		chronometer.start();
 		player = new Player();
 		platforms = new ArrayList<>();
 		floor = new ArrayList<>();
@@ -275,5 +278,11 @@ public class Game extends Thread implements IGame {
 	@Override
 	public Platform[] getCeilling() {
 		return ceilling.toArray(new Platform[0]);
+	}
+
+	@Override
+	public int[] getTime() {
+		return new int[] { chronometer.getHours(), chronometer.getMinuts(), chronometer.getSeconds(),
+				chronometer.getMillis() };
 	}
 }

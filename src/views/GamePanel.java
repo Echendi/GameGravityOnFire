@@ -4,7 +4,9 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import models.IGame;
@@ -14,38 +16,86 @@ import models.Player;
 public class GamePanel extends JPanel {
 
 	private static final long serialVersionUID = 1L;
-	private Point playerPosition;
-	private Platform[] platforms;
-	private Platform[] floor;
-	private Platform[] ceilling;
+	private static final String TIME_FORMAT = "00:00:00:00";
+	private BufferedImage gameScene;
+	private JLabel lblTime;
+	
 
 	public GamePanel(ActionListener listener) {
-		playerPosition = Player.STARTING_POSITION;
-		platforms = new Platform[0];
-		floor = new Platform[0];
-		ceilling = new Platform[0];
-		requestFocus();
+		lblTime = new JLabel(TIME_FORMAT);
+		add(lblTime);
 	}
 
 	public void refreshGame(IGame game) {
-		playerPosition = game.getPlayerPosition();
-		platforms = game.getPlatforms();
-		floor = game.getFloor();
-		ceilling = game.getCeilling();
+		paintBackground();
+		paintHero(game.getPlayerPosition());
+		paintPlataforms(game.getPlatforms());
+		paintFloor(game.getFloor());
+		paintCeilling(game.getCeilling());
+		updateLblTime(game.getTime());
 		repaint();
 	}
 
-	@Override
-	public void paint(Graphics g) {
-		super.paint(g);
-		drawPlatformsObjects(g, platforms);
+	private void updateLblTime(int[] time) {
+		int hours = time[0];
+		int minuts = time[1];
+		int seconds = time[2];
+		int millis = time[3];
+		lblTime.setText((hours<10?"0":"")+hours+":"+(minuts<10?"0":"")+minuts+":"+(seconds<10?"0":"")+seconds+":"+(millis<10?"0":"")+millis);
+	}
+
+	private void paintFloor(Platform[] floor) {
+		Graphics g = gameScene.getGraphics();
 		g.setColor(Color.RED);
 		drawPlatformsObjects(g, floor);
+	}
+
+	private void paintCeilling(Platform[] ceilling) {
+		Graphics g = gameScene.getGraphics();
 		g.setColor(Color.ORANGE);
 		drawPlatformsObjects(g, ceilling);
+	}
+
+	private void paintPlataforms(Platform[] platforms) {
+		Graphics g = gameScene.getGraphics();
+		g.setColor(Color.BLUE);
+		drawPlatformsObjects(g, platforms);
+	}
+
+	private void paintHero(Point playerPosition) {
+		Graphics g = gameScene.getGraphics();
 		g.setColor(Color.GREEN);
 		g.fillRect(playerPosition.x, playerPosition.y, Player.WIDTH, Player.HEIGTH);
 	}
+
+	private void paintBackground() {
+		if (gameScene == null) {
+			gameScene = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
+		}
+		Graphics g = gameScene.getGraphics();
+		g.setColor(Color.WHITE);
+		g.fillRect(0, 0, getWidth(), getHeight());
+//		g.drawImage(imgBack, 0, 0, getWidth(), getHeight(), this);
+	}
+
+	@Override
+	protected void paintComponent(Graphics g) {
+		super.paintComponent(g);
+		g.drawImage(gameScene, 0, 0, this);
+		
+	}
+
+//	@Override
+//	public void paint(Graphics g) {
+//		super.paint(g);
+//		drawPlatformsObjects(g, platforms);
+//		g.setColor(Color.RED);
+//		drawPlatformsObjects(g, floor);
+//		g.setColor(Color.ORANGE);
+//		drawPlatformsObjects(g, ceilling);
+//		g.setColor(Color.GREEN);
+//		g.fillRect(playerPosition.x, playerPosition.y, Player.WIDTH, Player.HEIGTH);
+//	}
 
 	private void drawPlatformsObjects(Graphics g, Platform[] platformObjects) {
 		if (platformObjects.length > 0) {
