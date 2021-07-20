@@ -5,13 +5,12 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-
 import models.IGame;
 import models.Platform;
 import models.Player;
+import models.Trap;
 
 public class GamePanel extends JPanel {
 
@@ -19,21 +18,10 @@ public class GamePanel extends JPanel {
 	private static final String TIME_FORMAT = "00:00:00:00";
 	private BufferedImage gameScene;
 	private JLabel lblTime;
-	
 
 	public GamePanel(ActionListener listener) {
 		lblTime = new JLabel(TIME_FORMAT);
 		add(lblTime);
-	}
-
-	public void refreshGame(IGame game) {
-		paintBackground();
-		paintHero(game.getPlayerPosition());
-		paintPlataforms(game.getPlatforms());
-		paintFloor(game.getFloor());
-		paintCeilling(game.getCeilling());
-		updateLblTime(game.getTime());
-		repaint();
 	}
 
 	private void updateLblTime(int[] time) {
@@ -41,12 +29,41 @@ public class GamePanel extends JPanel {
 		int minuts = time[1];
 		int seconds = time[2];
 		int millis = time[3];
-		lblTime.setText((hours<10?"0":"")+hours+":"+(minuts<10?"0":"")+minuts+":"+(seconds<10?"0":"")+seconds+":"+(millis<10?"0":"")+millis);
+		lblTime.setText((hours < 10 ? "0" : "") + hours + ":" + (minuts < 10 ? "0" : "") + minuts + ":"
+				+ (seconds < 10 ? "0" : "") + seconds + ":" + (millis < 10 ? "0" : "") + millis);
+	}
+
+	public void refreshGame(IGame game) {
+		paintBackground();
+		paintPlataforms(game.getPlatforms());
+		paintAbyss(game.getAbyss());
+		paintFloor(game.getFloor());
+		paintCeilling(game.getCeilling());
+		paintFire(game.getFire());
+		paintHero(game.getPlayerPosition());
+		updateLblTime(game.getTime());
+		repaint();
+	}
+
+	private void paintAbyss(Trap[] abyss) {
+		Graphics g = gameScene.getGraphics();
+		g.setColor(Color.BLACK);
+		for (Trap trap : abyss) {
+			if (trap != null) {
+				g.fillRect(trap.getPosition().x, trap.getPosition().y, trap.getWidth(), trap.getHeigth());
+			}
+		}
+	}
+
+	private void paintFire(Trap fire) {
+		Graphics g = gameScene.getGraphics();
+		g.setColor(Color.RED);
+		g.fillRect(fire.getPosition().x, fire.getPosition().y, fire.getWidth(), fire.getHeigth());
 	}
 
 	private void paintFloor(Platform[] floor) {
 		Graphics g = gameScene.getGraphics();
-		g.setColor(Color.RED);
+		g.setColor(Color.MAGENTA);
 		drawPlatformsObjects(g, floor);
 	}
 
@@ -82,20 +99,7 @@ public class GamePanel extends JPanel {
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		g.drawImage(gameScene, 0, 0, this);
-		
 	}
-
-//	@Override
-//	public void paint(Graphics g) {
-//		super.paint(g);
-//		drawPlatformsObjects(g, platforms);
-//		g.setColor(Color.RED);
-//		drawPlatformsObjects(g, floor);
-//		g.setColor(Color.ORANGE);
-//		drawPlatformsObjects(g, ceilling);
-//		g.setColor(Color.GREEN);
-//		g.fillRect(playerPosition.x, playerPosition.y, Player.WIDTH, Player.HEIGTH);
-//	}
 
 	private void drawPlatformsObjects(Graphics g, Platform[] platformObjects) {
 		if (platformObjects.length > 0) {

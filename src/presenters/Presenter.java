@@ -42,7 +42,13 @@ public class Presenter extends KeyAdapter implements ActionListener {
 	public void keyPressed(KeyEvent e) {
 		int code = e.getExtendedKeyCode();
 		switch (code) {
-		case KeyEvent.VK_SPACE -> game.changeGravity();
+		case KeyEvent.VK_SPACE -> changeGravity();
+		}
+	}
+
+	private void changeGravity() {
+		if (Game.isPlay()) {
+			game.changeGravity();
 		}
 	}
 

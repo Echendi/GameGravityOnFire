@@ -12,6 +12,10 @@ public interface IGame {
 
 	public Platform[] getCeilling();
 
+	public Trap getFire();
+
 	public int[] getTime();
+
+	public Trap[] getAbyss();
 
 }

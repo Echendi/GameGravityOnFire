@@ -18,7 +18,7 @@ public abstract class Collider {
 	}
 
 	public Point getPosition() {
-		return position;
+		return new Point(position);
 	}
 
 	public int getWidth() {

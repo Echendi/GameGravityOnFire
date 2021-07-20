@@ -6,20 +6,33 @@ import java.util.Random;
 
 public class Game extends Thread implements IGame {
 
+	private static final int CHANGE_DIFFICULTY_TIME = 20000;
 	public static final int MAP_WIDTH = 900;
-	public static final int MAP_HIGTH = 600;
-	public static final int MAX_PLATFORMS = 10;
-	private static final int VELOCITY = 9;
-	private static final int FLOOR_Y_POSITION = Game.MAP_HIGTH - 90;
+	public static final int MAP_HEIGTH = 600;
+	public static final int INITIAL_MAX_PLATFORMS = 10;
+	private static final int INITIAL_VELOCITY = 5;
+	private static final int FLOOR_Y_POSITION = MAP_HEIGTH - 90;
 	private static final int CEILLING_Y_POSITION = 30;
+	private static final int FIRE_HEIGTH = MAP_HEIGTH;
+	private static final int FIRE_WIDTH = MAP_WIDTH / 10;
 	private static final Random randomGenerator = new Random();
 
+	// Variables del juego
+	private static boolean play;
+	private int maxPlatforms;
+	private int velocity;
+	private long lapseOfTime;
+
+	// Objetos del juego
 	private Player player;
 	private ArrayList<Platform> platforms;
 	private ArrayList<Platform> floor;
 	private ArrayList<Platform> ceilling;
 	private Chronometer chronometer;
-	private boolean play;
+	private Trap fire;
+	private Trap abyss[];
+
+	// Detección de colisiones
 	private int platformCollision;
 	private int platformForntCollision;
 	private int floorCollision;
@@ -28,34 +41,78 @@ public class Game extends Thread implements IGame {
 	private int ceillingFrontCollision;
 
 	public Game() {
+		initGame();
+	}
+
+	private void initGame() {
+		velocity = INITIAL_VELOCITY;
+		maxPlatforms = INITIAL_MAX_PLATFORMS;
 		chronometer = new Chronometer();
 		chronometer.start();
 		player = new Player();
 		platforms = new ArrayList<>();
 		floor = new ArrayList<>();
 		ceilling = new ArrayList<>();
+		createAbyss();
+		fire = new Trap(new Point(0, 0), FIRE_WIDTH, FIRE_HEIGTH);
 		play = true;
 		platformCollision = -1;
 		platformForntCollision = -1;
 		floorCollision = -1;
 		floorFrontCollision = -1;
 		start();
+
+	}
+
+	private void createAbyss() {
+		abyss = new Trap[2];
+		abyss[0] = new Trap(new Point(0, 0), MAP_WIDTH, CEILLING_Y_POSITION+(Platform.HIGTH/2));
+		abyss[1] = new Trap(new Point(0, FLOOR_Y_POSITION +(Platform.HIGTH/2)), MAP_WIDTH,
+				MAP_HEIGTH - FLOOR_Y_POSITION + Platform.HIGTH);
 	}
 
 	@Override
 	public void run() {
+		initRun();
 		while (play) {
 			player.move();
 			movePlatformObjects();
 			checkCollisions();
 			sleeping();
+			increaseDifficulty();
 		}
+	}
+
+	private void initRun() {
+		lapseOfTime = System.currentTimeMillis();
 	}
 
 	private void checkCollisions() {
 		checkPlatformsCollisions();
 		checkFloorCollisions();
 		checkCeillingCollisions();
+		checkFireCollision();
+		checkAbyssColissions();
+	}
+
+	private void checkAbyssColissions() {
+		for (Trap trap : abyss) {
+			if(player.checkCollision(trap)) {
+				gameOver();
+			}
+		}
+
+	}
+
+	private void checkFireCollision() {
+		if (player.checkCollision(fire)) {
+			gameOver();
+		}
+	}
+
+	private void gameOver() {
+		play = false;
+		chronometer.pause();
 	}
 
 	private void movePlatformObjects() {
@@ -229,14 +286,14 @@ public class Game extends Thread implements IGame {
 
 	private void sleeping() {
 		try {
-			Thread.sleep(VELOCITY);
+			Thread.sleep(velocity);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 	}
 
 	private void movePlataforms() {
-		if (platforms.size() < MAX_PLATFORMS) {
+		if (platforms.size() < maxPlatforms) {
 			createPlatform();
 		}
 		platforms.removeIf(Platform::move);
@@ -258,6 +315,18 @@ public class Game extends Thread implements IGame {
 
 	public void changeGravity() {
 		player.changeGravity();
+	}
+
+	public static boolean isPlay() {
+		return play;
+	}
+
+	public void increaseDifficulty() {
+		if (System.currentTimeMillis() - lapseOfTime > CHANGE_DIFFICULTY_TIME) {
+			velocity -= velocity > 1 ? 1 : 0;
+			maxPlatforms++;
+			initRun();
+		}
 	}
 
 	@Override
@@ -284,5 +353,17 @@ public class Game extends Thread implements IGame {
 	public int[] getTime() {
 		return new int[] { chronometer.getHours(), chronometer.getMinuts(), chronometer.getSeconds(),
 				chronometer.getMillis() };
+	}
+
+	@Override
+	public Trap getFire() {
+		return fire;
+	}
+
+	@Override
+	public Trap[] getAbyss() {
+		Trap[] copyAbyss = new Trap[2];
+		System.arraycopy(abyss, 0, copyAbyss, 0, abyss.length);
+		return copyAbyss;
 	}
 }

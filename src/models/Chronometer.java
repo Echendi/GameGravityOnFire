@@ -6,6 +6,7 @@ import java.awt.event.ActionListener;
 import javax.swing.Timer;
 
 public class Chronometer {
+	private static final int TIMER_DELAY = 10;
 	private Timer time;
 	private int millis;
 	private int seconds;
@@ -17,41 +18,41 @@ public class Chronometer {
 		seconds = 0;
 		minuts = 0;
 		hours = 0;
-		time = new Timer(10, new ActionListener() {
-			
+		time = new Timer(TIMER_DELAY, new ActionListener() {
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				millis++;
-				if(millis==100) {
+				if (millis == 100) {
 					seconds++;
-					millis=0;
+					millis = 0;
 				}
-				if(seconds==60) {
+				if (seconds == 60) {
 					minuts++;
-					seconds=0;
+					seconds = 0;
 				}
-				if (minuts==60) {
+				if (minuts == 60) {
 					hours++;
-					minuts=0;
+					minuts = 0;
 				}
-				
+
 			}
 		});
 	}
-	
+
 	public void start() {
 		time.start();
 	}
-	
+
 	public void pause() {
 		time.stop();
 	}
-	
+
 	public void resetTime() {
-		millis=0;
-		seconds=0;
-		minuts=0;
-		hours=0;
+		millis = 0;
+		seconds = 0;
+		minuts = 0;
+		hours = 0;
 	}
 
 	public Timer getTime() {
@@ -73,7 +74,5 @@ public class Chronometer {
 	public int getHours() {
 		return hours;
 	}
-	
-	
 
 }

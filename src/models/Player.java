@@ -5,12 +5,12 @@ import java.awt.Rectangle;
 
 public class Player {
 
-	public static final int X_MIN = Game.MAP_WIDTH / 10;
+	public static final int X_MIN = 10;
 	public static final int X_MOVE_SIZE = 1;
-	public static final int Y_MOVE_SIZE = 3;
+	public static final int Y_MOVE_SIZE = 1;
 	public static final int WIDTH = 25;
 	public static final int HEIGTH = 50;
-	public static final Point STARTING_POSITION = new Point(Game.MAP_WIDTH / 2, 0);
+	public static final Point STARTING_POSITION = new Point(Game.MAP_WIDTH / 2, 50);
 	private boolean isColliding;
 	private boolean isFrontColliding;
 //	private boolean isAlive;
@@ -27,7 +27,7 @@ public class Player {
 
 	public void changeGravity() {
 		isDown = !isDown;
-		position.y += isDown ? Y_MOVE_SIZE : Y_MOVE_SIZE  * (-1);
+		position.y += isDown ? Y_MOVE_SIZE : Y_MOVE_SIZE * (-1);
 	}
 
 	public void move() {
@@ -40,7 +40,7 @@ public class Player {
 			position.x += X_MOVE_SIZE;
 		}
 		if (isFrontColliding && position.x > X_MIN) {
-			position.x -= Platform.MOVE_SIZE;
+			position.x -= Platform.moveSize;
 		}
 	}
 
@@ -51,9 +51,8 @@ public class Player {
 	}
 
 	private boolean checkLimits() {
-		return (isDown && position.y + HEIGTH
-				+ (Y_MOVE_SIZE * 13) < Game.MAP_HIGTH)
-				|| (!isDown && position.y - X_MOVE_SIZE > 0);
+		return ((isDown && (position.y + HEIGTH + Y_MOVE_SIZE * 40) < Game.MAP_HEIGTH))
+				|| (!isDown && position.y - Y_MOVE_SIZE > 0);
 	}
 
 	public boolean checkCollision(Collider collider) {
@@ -88,6 +87,6 @@ public class Player {
 //	}
 
 	public Point getPosition() {
-		return position;
+		return new Point(position);
 	}
 }
