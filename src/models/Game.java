@@ -23,7 +23,8 @@ public class Game extends Thread implements IGame {
 	private static final Random randomGenerator = new Random();
 
 	// Variables del juego
-	private boolean play;
+	private boolean isPlay;
+	private boolean isPaused;
 	private int maxPlatforms;
 	private int velocity;
 
@@ -39,7 +40,7 @@ public class Game extends Thread implements IGame {
 	private Trap abyss[];
 	private Chronometer chronometer;
 
-	// Detección de colisiones
+	// Detecciï¿½n de colisiones
 	private int platformCollision;
 	private int platformForntCollision;
 	private int floorCollision;
@@ -88,7 +89,7 @@ public class Game extends Thread implements IGame {
 		ceilling = new ArrayList<>();
 		createAbyss();
 		fire = new Trap(0, 0, FIRE_WIDTH, FIRE_HEIGTH);
-		play = true;
+		isPaused = false;
 		platformCollision = -1;
 		platformForntCollision = -1;
 		floorCollision = -1;
@@ -107,12 +108,24 @@ public class Game extends Thread implements IGame {
 	@Override
 	public void run() {
 		initRun();
-		while (play) {
+		while (isPlay) {
 			player.move();
 			movePlatformObjects();
 			checkCollisions();
 			sleeping();
 			increaseDifficulty();
+			synchronized (this) {
+				if (isPaused) {
+					try {
+						wait();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					if (!isPlay) {
+						break;
+					}
+				}
+			}
 		}
 //		synchronized (this) {
 //			FileManager.saveGame(this);
@@ -120,7 +133,25 @@ public class Game extends Thread implements IGame {
 //		}
 	}
 
+	public synchronized void stopped() {
+		isPlay = false;
+		notifyAll();
+	}
+
+	public synchronized void pause() {
+		isPaused = true;
+		chronometer.pause();
+		notifyAll();
+	}
+
+	public synchronized void resumed() {
+		isPaused = false;
+		chronometer.resumed();
+		notifyAll();
+	}
+
 	private void initRun() {
+		isPlay = true;
 		chronometer.start();
 		lapseOfTime = System.currentTimeMillis();
 	}
@@ -148,8 +179,8 @@ public class Game extends Thread implements IGame {
 	}
 
 	private void gameOver() {
-		play = false;
-		chronometer.pause();
+		isPlay = false;
+		chronometer.stopped();
 	}
 
 	private void movePlatformObjects() {
@@ -356,7 +387,7 @@ public class Game extends Thread implements IGame {
 	}
 
 	public boolean isPlay() {
-		return play;
+		return isPlay;
 	}
 
 	public void increaseDifficulty() {
@@ -441,5 +472,10 @@ public class Game extends Thread implements IGame {
 	@Override
 	public boolean isDown() {
 		return player.isDown();
+	}
+
+	@Override
+	public boolean isPaused() {
+		return isPaused;
 	}
 }

@@ -33,6 +33,10 @@ public class MainFrame extends JFrame {
 
 	}
 
+	public void setBtnPauseText(String text) {
+		this.panel.setBtnPauseText(text);
+	}
+
 	public void refreshGame(IGame game) {
 		panel.refreshGame(game);
 	}

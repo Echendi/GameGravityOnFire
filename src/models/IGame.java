@@ -20,4 +20,6 @@ public interface IGame {
 
 	public boolean isDown();
 
+	public boolean isPaused();
+
 }

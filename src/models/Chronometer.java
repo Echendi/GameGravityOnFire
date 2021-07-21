@@ -13,6 +13,7 @@ public class Chronometer extends Thread {
 	private int minuts;
 	private int hours;
 	private boolean isRun;
+	private boolean isPaused;
 
 	public Chronometer() {
 		millis = 0;
@@ -30,8 +31,19 @@ public class Chronometer extends Thread {
 //		this.hours = Integer.parseInt(times[0]);
 //	}
 
-	public synchronized void pause() {
+	public synchronized void stopped() {
 		isRun = false;
+		notifyAll();
+	}
+
+	public synchronized void pause() {
+		isPaused = true;
+		notifyAll();
+	}
+
+	public synchronized void resumed() {
+		isPaused = false;
+		notifyAll();
 	}
 
 	public void resetTime() {
@@ -67,6 +79,18 @@ public class Chronometer extends Thread {
 				minuts = 0;
 			}
 			sleeping();
+			synchronized (this) {
+				if (isPaused) {
+					try {
+						wait();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					if (!isRun) {
+						break;
+					}
+				}
+			}
 		}
 	}
 

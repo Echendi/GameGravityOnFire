@@ -7,6 +7,7 @@ import java.awt.event.KeyEvent;
 import javax.swing.Timer;
 import models.Game;
 import persistence.FileManager;
+import views.GamePanel;
 import views.MainFrame;
 
 public class Presenter extends KeyAdapter implements ActionListener {
@@ -16,7 +17,7 @@ public class Presenter extends KeyAdapter implements ActionListener {
 
 	public Presenter() {
 		this.game = new Game();
-		view = new MainFrame(this, this); 
+		view = new MainFrame(this, this);
 		game.start();
 		updateUi();
 		try {
@@ -37,13 +38,18 @@ public class Presenter extends KeyAdapter implements ActionListener {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		switch (e.getActionCommand()) {
-		case "":
+		switch (Command.valueOf(e.getActionCommand())) {
+		case PAUSE -> pause();
+		}
+	}
 
-			break;
-
-		default:
-			break;
+	private synchronized void pause() {
+		if (game.isPaused()) {
+			game.resumed();
+			view.setBtnPauseText(GamePanel.PAUSED_TEXT);
+		} else {
+			game.pause();
+			view.setBtnPauseText(GamePanel.PLAY_TEXT);
 		}
 	}
 
@@ -52,11 +58,12 @@ public class Presenter extends KeyAdapter implements ActionListener {
 		int code = e.getExtendedKeyCode();
 		switch (code) {
 		case KeyEvent.VK_SPACE -> changeGravity();
+		case KeyEvent.VK_P -> pause();
 		}
 	}
 
 	private void changeGravity() {
-		if (game.isPlay()) {
+		if (game.isPlay()&& !game.isPaused()) {
 			game.changeGravity();
 		}
 	}

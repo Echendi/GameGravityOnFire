@@ -1,33 +1,36 @@
 package views;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.GradientPaint;
+import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Image;
+import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.Random;
-
 import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.Timer;
-
+import buttons.Button;
+import buttons.TypeButton;
 import models.Game;
 import models.IGame;
 import models.Platform;
 import models.Player;
 import models.Trap;
+import presenters.Command;
 
 public class GamePanel extends JPanel {
 
-	private static final int IMG_CITY_WIDTH = 9300;
-	private static final int X_START_IMG_CITY = 100;
+	private static final int IMG_CITY_WIDTH = 3500;
+	private static final int X_START_IMG_BG = 50;
+	private static final int X_END_IMG_BG = 850;
+	public static final String PLAY_TEXT = "\u00BB";
+	public static final String PAUSED_TEXT = "II";
 	private static final long serialVersionUID = 1L;
 	private static final String TIME_FORMAT = "00:00:00:00";
 	private BufferedImage gameScene;
@@ -39,24 +42,46 @@ public class GamePanel extends JPanel {
 	private BufferedImage imgCity;
 	private BufferedImage skinCity;
 	private BufferedImage platformSkin;
-	private JLabel lblTime;
+	private BufferedImage[] platformSkins;
 	private Timer timer;
+	private JLabel lblTime;
+	private Button btnPause;
 	private boolean isDown;
+	private boolean isPaused;
 
 	public GamePanel(ActionListener listener) {
+		setLayout(new BorderLayout());
+		JPanel panel = new JPanel();
+//		JPanel panel = new JPanel(new GridLayout(1, 2, 450, 5));
+		panel.setOpaque(false);
 		lblTime = new JLabel(TIME_FORMAT);
 		lblTime.setForeground(Color.WHITE);
+		lblTime.setFont(new Font("Arial", Font.PLAIN, 20));
+		btnPause = new Button(TypeButton.SUCCESS, PAUSED_TEXT);
+		btnPause.setPreferredSize(new Dimension(25, 25));
+		btnPause.setFocusable(false);
+		btnPause.addActionListener(listener);
+		btnPause.setActionCommand(Command.PAUSE.toString());
+		btnPause.setFont(new Font("Arial", Font.PLAIN, 20));
+		btnPause.setVisible(true);
 		isDown = true;
+		isPaused = false;
 		initSkins();
-//		this.imgFire = new BufferedImage(Game.MAP_WIDTH, Game.MAP_HEIGTH, BufferedImage.TYPE_INT_RGB);
-//		this.imgFire = new ImageIcon(getClass().getResource("/res/img/fire.png")).getImage();
-		add(lblTime);
+		panel.add(lblTime);
+		panel.add(btnPause);
+		add(panel, BorderLayout.NORTH);
+	}
+
+	public void setBtnPauseText(String text) {
+		this.btnPause.setText(text);
 	}
 
 	private void initSkins() {
 		try {
-			platformSkin = ImageIO.read(getClass().getResource("/res/img/platform.png"));
-			
+			platformSkins = new BufferedImage[2];
+			platformSkins[0] = ImageIO.read(getClass().getResource("/res/img/plata2.png"));
+			platformSkins[1] = ImageIO.read(getClass().getResource("/res/img/plata.png"));
+
 			BufferedImage image = ImageIO.read(getClass().getResource("/res/img/fire.png"));
 			fireSkins = new BufferedImage[3];
 			fireSkins[0] = image.getSubimage(0, 0, 385 / 3, 537);
@@ -75,7 +100,7 @@ public class GamePanel extends JPanel {
 
 			this.imgSpace = ImageIO.read(getClass().getResource("/res/img/space.png")).getSubimage(0, 0, Game.MAP_WIDTH,
 					Game.MAP_HEIGTH);
-			this.imgCity = ImageIO.read(getClass().getResource("/res/img/2006.jpg"));
+			this.imgCity = ImageIO.read(getClass().getResource("/res/img/backGround.png"));
 			initTimer();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -84,19 +109,21 @@ public class GamePanel extends JPanel {
 
 	private void initTimer() {
 		timer = new Timer(150, new ActionListener() {
-			int count = 100;
+			int count = 0;
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				changeFireSkin();
-				changeCitySkin(count);
-				changePlayerSkin();
-				count = count + Game.MAP_WIDTH > IMG_CITY_WIDTH ? 0 : count + 1;
+				if (!isPaused) {
+					changeFireSkin();
+					changeCitySkin(count);
+					changePlayerSkin();
+					count = count + Game.MAP_WIDTH > IMG_CITY_WIDTH ? 0 : count + 1;
+				}
 			}
 		});
 		timer.start();
 	}
-	
+
 	private void changePlayerSkin() {
 		if (isDown) {
 			imgPlayer = imgPlayer == playerSkins[0] ? playerSkins[1]
@@ -108,12 +135,11 @@ public class GamePanel extends JPanel {
 	}
 
 	private void changeCitySkin(int count) {
-		skinCity = imgCity.getSubimage(count, 600, Game.MAP_WIDTH, 1400);
+		skinCity = imgCity.getSubimage(count, X_START_IMG_BG, Game.MAP_WIDTH, X_END_IMG_BG);
 	}
 
 	private void changeFireSkin() {
-		imgFire = imgFire == fireSkins[0] ? fireSkins[1]
-				: imgFire == fireSkins[1] ? fireSkins[2] : fireSkins[0];
+		imgFire = imgFire == fireSkins[0] ? fireSkins[1] : imgFire == fireSkins[1] ? fireSkins[2] : fireSkins[0];
 	}
 
 	private void updateLblTime(int[] time) {
@@ -127,6 +153,7 @@ public class GamePanel extends JPanel {
 
 	public void refreshGame(IGame game) {
 		isDown = game.isDown();
+		isPaused = game.isPaused();
 		paintBackground();
 		paintPlataforms(game.getPlatforms());
 		paintFloor(game.getFloor());
@@ -146,17 +173,20 @@ public class GamePanel extends JPanel {
 
 	private void paintFloor(Platform[] floor) {
 		Graphics g = gameScene.getGraphics();
-		drawPlatformsObjects(g, floor, Color.ORANGE);
+		platformSkin = platformSkins[1];
+		drawPlatformsObjects(g, floor);
 	}
 
 	private void paintCeilling(Platform[] ceilling) {
 		Graphics g = gameScene.getGraphics();
-		drawPlatformsObjects(g, ceilling, Color.ORANGE);
+		platformSkin = platformSkins[1];
+		drawPlatformsObjects(g, ceilling);
 	}
 
 	private void paintPlataforms(Platform[] platforms) {
 		Graphics g = gameScene.getGraphics();
-		drawPlatformsObjects(g, platforms, Color.BLACK);
+		platformSkin = platformSkins[0];
+		drawPlatformsObjects(g, platforms);
 	}
 
 	private void paintPlayer(Point playerPosition) {
@@ -182,7 +212,7 @@ public class GamePanel extends JPanel {
 		g.drawImage(gameScene, 0, 0, this);
 	}
 
-	private void drawPlatformsObjects(Graphics g, Platform[] platformObjects, Color color) {
+	private void drawPlatformsObjects(Graphics g, Platform[] platformObjects) {
 		if (platformObjects.length > 0) {
 			for (Platform platform : platformObjects) {
 				if (platform != null) {

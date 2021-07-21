@@ -1,6 +1,7 @@
 {
-  "play" : false,
-  "maxPlatforms" : 16,
+  "isPlay" : false,
+  "isPaused" : false,
+  "maxPlatforms" : 15,
   "velocity" : 1,
   "player" : {
     "isColliding" : true,
@@ -11,125 +12,131 @@
     "down" : true
   },
   "platforms" : [ {
-    "x" : 156,
-    "y" : 178,
-    "width" : 86,
+    "x" : -150,
+    "y" : 76,
+    "width" : 174,
     "heigth" : 25,
     "height" : 25
   }, {
-    "x" : -84,
-    "y" : 406,
-    "width" : 245,
-    "heigth" : 25,
-    "height" : 25
-  }, {
-    "x" : 399,
-    "y" : 356,
-    "width" : 92,
-    "heigth" : 25,
-    "height" : 25
-  }, {
-    "x" : 320,
-    "y" : 457,
-    "width" : 205,
+    "x" : 130,
+    "y" : 335,
+    "width" : 111,
     "heigth" : 25,
     "height" : 25
   }, {
     "x" : 125,
-    "y" : 470,
-    "width" : 209,
+    "y" : 469,
+    "width" : 131,
     "heigth" : 25,
     "height" : 25
   }, {
-    "x" : 82,
-    "y" : 143,
-    "width" : 165,
+    "x" : 69,
+    "y" : 196,
+    "width" : 219,
     "heigth" : 25,
     "height" : 25
   }, {
-    "x" : 827,
-    "y" : 424,
-    "width" : 182,
+    "x" : 178,
+    "y" : 258,
+    "width" : 59,
     "heigth" : 25,
     "height" : 25
   }, {
-    "x" : 663,
-    "y" : 134,
-    "width" : 124,
+    "x" : 7,
+    "y" : 408,
+    "width" : 178,
     "heigth" : 25,
     "height" : 25
   }, {
-    "x" : 1008,
-    "y" : 437,
-    "width" : 222,
+    "x" : 519,
+    "y" : 230,
+    "width" : 80,
     "heigth" : 25,
     "height" : 25
   }, {
-    "x" : 1144,
-    "y" : 160,
-    "width" : 212,
+    "x" : 86,
+    "y" : 396,
+    "width" : 135,
     "heigth" : 25,
     "height" : 25
   }, {
-    "x" : 632,
-    "y" : 283,
-    "width" : 114,
+    "x" : 129,
+    "y" : 208,
+    "width" : 236,
     "heigth" : 25,
     "height" : 25
   }, {
-    "x" : 922,
-    "y" : 99,
-    "width" : 221,
+    "x" : 879,
+    "y" : 215,
+    "width" : 107,
     "heigth" : 25,
     "height" : 25
   }, {
-    "x" : 1002,
-    "y" : 154,
-    "width" : 60,
+    "x" : 330,
+    "y" : 280,
+    "width" : 245,
     "heigth" : 25,
     "height" : 25
   }, {
-    "x" : 1437,
-    "y" : 329,
-    "width" : 226,
+    "x" : 928,
+    "y" : 326,
+    "width" : 70,
     "heigth" : 25,
     "height" : 25
   }, {
-    "x" : 1471,
-    "y" : 403,
-    "width" : 73,
+    "x" : 1229,
+    "y" : 381,
+    "width" : 197,
     "heigth" : 25,
     "height" : 25
   }, {
-    "x" : 820,
-    "y" : 221,
-    "width" : 162,
+    "x" : 1072,
+    "y" : 317,
+    "width" : 154,
+    "heigth" : 25,
+    "height" : 25
+  }, {
+    "x" : 1117,
+    "y" : 274,
+    "width" : 183,
     "heigth" : 25,
     "height" : 25
   } ],
   "floor" : [ {
-    "x" : -174,
+    "x" : -222,
     "y" : 510,
-    "width" : 579,
+    "width" : 817,
     "heigth" : 25,
     "height" : 25
   }, {
-    "x" : 506,
+    "x" : 696,
     "y" : 510,
-    "width" : 496,
+    "width" : 818,
     "heigth" : 25,
     "height" : 25
   } ],
   "ceilling" : [ {
-    "x" : -66,
+    "x" : -27,
     "y" : 30,
-    "width" : 853,
+    "width" : 116,
     "heigth" : 25,
     "height" : 25
   }, {
-    "x" : 888,
+    "x" : 190,
     "y" : 30,
-    "width" : 756,
+    "width" : 263,
+    "heigth" : 25,
+    "height" : 25
+  }, {
+    "x" : 554,
+    "y" : 30,
+    "width" : 75,
+    "heigth" : 25,
+    "height" : 25
+  }, {
+    "x" : 730,
+    "y" : 30,
+    "width" : 909,
     "heigth" : 25,
     "height" : 25
   } ],
@@ -154,17 +161,20 @@
     "height" : 115
   } ],
   "chronometer" : {
-    "millis" : 0,
-    "seconds" : 14,
-    "minuts" : 1,
+    "millis" : 38,
+    "seconds" : 51,
+    "minuts" : 0,
     "hours" : 0,
-    "isRun" : false
+    "isRun" : false,
+    "isPaused" : false
   },
   "platformCollision" : -1,
-  "platformForntCollision" : 4,
+  "platformForntCollision" : 2,
   "floorCollision" : 0,
   "floorFrontCollision" : -1,
   "ceillingCollision" : -1,
   "ceillingFrontCollision" : -1,
-  "down" : true
+  "play" : false,
+  "down" : true,
+  "paused" : false
 }
