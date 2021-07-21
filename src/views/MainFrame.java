@@ -21,7 +21,7 @@ public class MainFrame extends JFrame {
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setSize(Game.MAP_WIDTH, Game.MAP_HEIGTH);
 		this.setResizable(false);
-		this.setIconImage(new ImageIcon(getClass().getResource("/res/gravityIcon.png")).getImage());
+		this.setIconImage(new ImageIcon(getClass().getResource("/res/img/gravityIcon.png")).getImage());
 		this.setLocationRelativeTo(null);
 		this.setVisible(true);
 	}

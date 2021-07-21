@@ -6,6 +6,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import javax.swing.Timer;
 import models.Game;
+import persistence.FileManager;
 import views.MainFrame;
 
 public class Presenter extends KeyAdapter implements ActionListener {
@@ -15,8 +16,16 @@ public class Presenter extends KeyAdapter implements ActionListener {
 
 	public Presenter() {
 		this.game = new Game();
-		view = new MainFrame(this, this);
+		view = new MainFrame(this, this); 
+		game.start();
 		updateUi();
+		try {
+			game.join();
+			FileManager.saveGame(game);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	private void updateUi() {
@@ -47,7 +56,7 @@ public class Presenter extends KeyAdapter implements ActionListener {
 	}
 
 	private void changeGravity() {
-		if (Game.isPlay()) {
+		if (game.isPlay()) {
 			game.changeGravity();
 		}
 	}

@@ -4,9 +4,14 @@ import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Random;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+@JsonAutoDetect(fieldVisibility = Visibility.ANY)
 public class Game extends Thread implements IGame {
 
-	private static final int CHANGE_DIFFICULTY_TIME = 20000;
+	private static final int CHANGE_DIFFICULTY_TIME = 15000;
 	public static final int MAP_WIDTH = 900;
 	public static final int MAP_HEIGTH = 600;
 	public static final int INITIAL_MAX_PLATFORMS = 10;
@@ -18,9 +23,11 @@ public class Game extends Thread implements IGame {
 	private static final Random randomGenerator = new Random();
 
 	// Variables del juego
-	private static boolean play;
+	private boolean play;
 	private int maxPlatforms;
 	private int velocity;
+
+	@JsonIgnore
 	private long lapseOfTime;
 
 	// Objetos del juego
@@ -28,9 +35,9 @@ public class Game extends Thread implements IGame {
 	private ArrayList<Platform> platforms;
 	private ArrayList<Platform> floor;
 	private ArrayList<Platform> ceilling;
-	private Chronometer chronometer;
 	private Trap fire;
 	private Trap abyss[];
+	private Chronometer chronometer;
 
 	// Detección de colisiones
 	private int platformCollision;
@@ -44,31 +51,57 @@ public class Game extends Thread implements IGame {
 		initGame();
 	}
 
+//	public Game(boolean play, int maxPlatforms, int velocity, long lapseOfTime, Player player,
+//			ArrayList<Platform> platforms, ArrayList<Platform> floor, ArrayList<Platform> ceilling, Trap fire,
+//			Trap[] abyss, Chronometer chronometer, int platformCollision, int platformForntCollision,
+//			int floorCollision, int floorFrontCollision, int ceillingCollision, int ceillingFrontCollision) {
+//		super();
+//		this.play = play;
+//		this.maxPlatforms = maxPlatforms;
+//		this.velocity = velocity;
+//		this.lapseOfTime = lapseOfTime;
+//		this.player = player;
+//		this.platforms = platforms;
+////		for (Platform platform : platforms) {
+////			this.platforms.add(platform);
+////		}
+//		this.floor = floor;
+//		this.ceilling = ceilling;
+//		this.fire = fire;
+//		this.abyss = abyss;
+//		this.chronometer = chronometer;
+//		this.platformCollision = platformCollision;
+//		this.platformForntCollision = platformForntCollision;
+//		this.floorCollision = floorCollision;
+//		this.floorFrontCollision = floorFrontCollision;
+//		this.ceillingCollision = ceillingCollision;
+//		this.ceillingFrontCollision = ceillingFrontCollision;
+//	}
+
 	private void initGame() {
 		velocity = INITIAL_VELOCITY;
 		maxPlatforms = INITIAL_MAX_PLATFORMS;
 		chronometer = new Chronometer();
-		chronometer.start();
 		player = new Player();
 		platforms = new ArrayList<>();
 		floor = new ArrayList<>();
 		ceilling = new ArrayList<>();
 		createAbyss();
-		fire = new Trap(new Point(0, 0), FIRE_WIDTH, FIRE_HEIGTH);
+		fire = new Trap(0, 0, FIRE_WIDTH, FIRE_HEIGTH);
 		play = true;
 		platformCollision = -1;
 		platformForntCollision = -1;
 		floorCollision = -1;
 		floorFrontCollision = -1;
-		start();
-
+		ceillingCollision = -1;
+		ceillingFrontCollision = -1;
 	}
 
 	private void createAbyss() {
 		abyss = new Trap[2];
-		abyss[0] = new Trap(new Point(0, 0), MAP_WIDTH, CEILLING_Y_POSITION+(Platform.HIGTH/2));
-		abyss[1] = new Trap(new Point(0, FLOOR_Y_POSITION +(Platform.HIGTH/2)), MAP_WIDTH,
-				MAP_HEIGTH - FLOOR_Y_POSITION + Platform.HIGTH);
+		abyss[0] = new Trap(0, 0, MAP_WIDTH, CEILLING_Y_POSITION);
+		abyss[1] = new Trap(0, FLOOR_Y_POSITION + (Platform.HEIGTH), MAP_WIDTH,
+				MAP_HEIGTH - FLOOR_Y_POSITION + Platform.HEIGTH);
 	}
 
 	@Override
@@ -81,9 +114,14 @@ public class Game extends Thread implements IGame {
 			sleeping();
 			increaseDifficulty();
 		}
+//		synchronized (this) {
+//			FileManager.saveGame(this);
+////			FileManager.loadGame();
+//		}
 	}
 
 	private void initRun() {
+		chronometer.start();
 		lapseOfTime = System.currentTimeMillis();
 	}
 
@@ -97,11 +135,10 @@ public class Game extends Thread implements IGame {
 
 	private void checkAbyssColissions() {
 		for (Trap trap : abyss) {
-			if(player.checkCollision(trap)) {
+			if (player.checkCollision(trap)) {
 				gameOver();
 			}
 		}
-
 	}
 
 	private void checkFireCollision() {
@@ -167,7 +204,7 @@ public class Game extends Thread implements IGame {
 	private void moveCeilling() {
 		if (ceilling.size() > 0) {
 			Platform lastCeilling = ceilling.get(ceilling.size() - 1);
-			if (lastCeilling.position.x + lastCeilling.getWidth() < Game.MAP_WIDTH - 100) {
+			if (lastCeilling.x + lastCeilling.getWidth() < Game.MAP_WIDTH - 100) {
 				generateCeillingPlatform();
 			}
 		} else {
@@ -177,7 +214,7 @@ public class Game extends Thread implements IGame {
 	}
 
 	private void generateCeillingPlatform() {
-		ceilling.add(new Platform(new Point(Game.MAP_WIDTH, CEILLING_Y_POSITION),
+		ceilling.add(new Platform(Game.MAP_WIDTH, CEILLING_Y_POSITION,
 				randomGenerator.nextInt(Game.MAP_WIDTH) + Platform.MIN_WIDTH));
 	}
 
@@ -227,7 +264,7 @@ public class Game extends Thread implements IGame {
 	private void moveFloor() {
 		if (floor.size() > 0) {
 			Platform lastFloor = floor.get(floor.size() - 1);
-			if (lastFloor.position.x + lastFloor.getWidth() < Game.MAP_WIDTH - 100) {
+			if (lastFloor.x + lastFloor.getWidth() < Game.MAP_WIDTH - 100) {
 				generateFloorPlatform();
 			}
 		} else {
@@ -237,7 +274,7 @@ public class Game extends Thread implements IGame {
 	}
 
 	private void generateFloorPlatform() {
-		floor.add(new Platform(new Point(Game.MAP_WIDTH, FLOOR_Y_POSITION),
+		floor.add(new Platform(Game.MAP_WIDTH, FLOOR_Y_POSITION,
 				randomGenerator.nextInt(Game.MAP_WIDTH) + Platform.MIN_WIDTH));
 	}
 
@@ -300,7 +337,8 @@ public class Game extends Thread implements IGame {
 	}
 
 	private void createPlatform() {
-		platforms.add(new Platform(generatePoint(), generatePlatformWidth()));
+		Point point = generatePoint();
+		platforms.add(new Platform(point.x, point.y, generatePlatformWidth()));
 	}
 
 	private int generatePlatformWidth() {
@@ -317,7 +355,7 @@ public class Game extends Thread implements IGame {
 		player.changeGravity();
 	}
 
-	public static boolean isPlay() {
+	public boolean isPlay() {
 		return play;
 	}
 
@@ -325,8 +363,40 @@ public class Game extends Thread implements IGame {
 		if (System.currentTimeMillis() - lapseOfTime > CHANGE_DIFFICULTY_TIME) {
 			velocity -= velocity > 1 ? 1 : 0;
 			maxPlatforms++;
-			initRun();
+			lapseOfTime = System.currentTimeMillis();
 		}
+	}
+
+	public int getMaxPlatforms() {
+		return maxPlatforms;
+	}
+
+	public int getVelocity() {
+		return velocity;
+	}
+
+	public int getPlatformCollision() {
+		return platformCollision;
+	}
+
+	public int getPlatformForntCollision() {
+		return platformForntCollision;
+	}
+
+	public int getFloorCollision() {
+		return floorCollision;
+	}
+
+	public int getFloorFrontCollision() {
+		return floorFrontCollision;
+	}
+
+	public int getCeillingCollision() {
+		return ceillingCollision;
+	}
+
+	public int getCeillingFrontCollision() {
+		return ceillingFrontCollision;
 	}
 
 	@Override
@@ -335,6 +405,7 @@ public class Game extends Thread implements IGame {
 	}
 
 	@Override
+	@JsonIgnore
 	public Point getPlayerPosition() {
 		return player.getPosition();
 	}
@@ -349,10 +420,10 @@ public class Game extends Thread implements IGame {
 		return ceilling.toArray(new Platform[0]);
 	}
 
+	@JsonIgnore
 	@Override
 	public int[] getTime() {
-		return new int[] { chronometer.getHours(), chronometer.getMinuts(), chronometer.getSeconds(),
-				chronometer.getMillis() };
+		return chronometer.getTime();
 	}
 
 	@Override
@@ -365,5 +436,10 @@ public class Game extends Thread implements IGame {
 		Trap[] copyAbyss = new Trap[2];
 		System.arraycopy(abyss, 0, copyAbyss, 0, abyss.length);
 		return copyAbyss;
+	}
+
+	@Override
+	public boolean isDown() {
+		return player.isDown();
 	}
 }

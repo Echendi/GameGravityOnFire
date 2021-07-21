@@ -18,4 +18,6 @@ public interface IGame {
 
 	public Trap[] getAbyss();
 
+	public boolean isDown();
+
 }

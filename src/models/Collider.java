@@ -2,23 +2,28 @@ package models;
 
 import java.awt.Point;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public abstract class Collider {
-	protected Point position;
+	protected int x;
+	protected int y;
 	protected int width;
 	protected int heigth;
 
-	public Collider(Point position, int width, int heigth) {
-		this.position = position;
+	public Collider(int x, int y, int width, int heigth) {
+		this.x = x;
+		this.y = y;
 		this.width = width;
 		this.heigth = heigth;
 	}
 
-	public int getHeigth() {
+	public int getHeight() {
 		return heigth;
 	}
 
+	@JsonIgnore
 	public Point getPosition() {
-		return new Point(position);
+		return new Point(x, y);
 	}
 
 	public int getWidth() {

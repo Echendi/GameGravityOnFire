@@ -1,12 +1,24 @@
 package views;
 
 import java.awt.Color;
+import java.awt.GradientPaint;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Point;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.Random;
+
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.Timer;
+
+import models.Game;
 import models.IGame;
 import models.Platform;
 import models.Player;
@@ -14,14 +26,94 @@ import models.Trap;
 
 public class GamePanel extends JPanel {
 
+	private static final int IMG_CITY_WIDTH = 9300;
+	private static final int X_START_IMG_CITY = 100;
 	private static final long serialVersionUID = 1L;
 	private static final String TIME_FORMAT = "00:00:00:00";
 	private BufferedImage gameScene;
+	private BufferedImage imgFire;
+	private BufferedImage[] fireSkins;
+	private BufferedImage imgPlayer;
+	private BufferedImage[] playerSkins;
+	private BufferedImage imgSpace;
+	private BufferedImage imgCity;
+	private BufferedImage skinCity;
+	private BufferedImage platformSkin;
 	private JLabel lblTime;
+	private Timer timer;
+	private boolean isDown;
 
 	public GamePanel(ActionListener listener) {
 		lblTime = new JLabel(TIME_FORMAT);
+		lblTime.setForeground(Color.WHITE);
+		isDown = true;
+		initSkins();
+//		this.imgFire = new BufferedImage(Game.MAP_WIDTH, Game.MAP_HEIGTH, BufferedImage.TYPE_INT_RGB);
+//		this.imgFire = new ImageIcon(getClass().getResource("/res/img/fire.png")).getImage();
 		add(lblTime);
+	}
+
+	private void initSkins() {
+		try {
+			platformSkin = ImageIO.read(getClass().getResource("/res/img/platform.png"));
+			
+			BufferedImage image = ImageIO.read(getClass().getResource("/res/img/fire.png"));
+			fireSkins = new BufferedImage[3];
+			fireSkins[0] = image.getSubimage(0, 0, 385 / 3, 537);
+			fireSkins[1] = image.getSubimage((385 / 3) + 5, 0, 385 / 3, 537);
+			fireSkins[2] = image.getSubimage((385 / 3 * 2) + 10, 0, (385 / 3) - 10, 537);
+
+			image = ImageIO.read(getClass().getResource("/res/img/player.png"));
+			playerSkins = new BufferedImage[6];
+			playerSkins[0] = image.getSubimage(0, 0, 123 / 3 - 15, 43);
+			playerSkins[1] = image.getSubimage((123 / 3) + 8, 0, 123 / 3 - 15, 43);
+			playerSkins[2] = image.getSubimage((123 / 3 * 2) + 14, 0, 123 / 3 - 15, 43);
+			image = ImageIO.read(getClass().getResource("/res/img/playerDown.png"));
+			playerSkins[3] = image.getSubimage(0, 0, 123 / 3 - 15, 43);
+			playerSkins[4] = image.getSubimage((123 / 3) + 8, 0, 123 / 3 - 15, 43);
+			playerSkins[5] = image.getSubimage((123 / 3 * 2) + 14, 0, 123 / 3 - 15, 43);
+
+			this.imgSpace = ImageIO.read(getClass().getResource("/res/img/space.png")).getSubimage(0, 0, Game.MAP_WIDTH,
+					Game.MAP_HEIGTH);
+			this.imgCity = ImageIO.read(getClass().getResource("/res/img/2006.jpg"));
+			initTimer();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void initTimer() {
+		timer = new Timer(150, new ActionListener() {
+			int count = 100;
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				changeFireSkin();
+				changeCitySkin(count);
+				changePlayerSkin();
+				count = count + Game.MAP_WIDTH > IMG_CITY_WIDTH ? 0 : count + 1;
+			}
+		});
+		timer.start();
+	}
+	
+	private void changePlayerSkin() {
+		if (isDown) {
+			imgPlayer = imgPlayer == playerSkins[0] ? playerSkins[1]
+					: imgPlayer == playerSkins[1] ? playerSkins[2] : playerSkins[0];
+		} else {
+			imgPlayer = imgPlayer == playerSkins[3] ? playerSkins[4]
+					: imgPlayer == playerSkins[4] ? playerSkins[5] : playerSkins[3];
+		}
+	}
+
+	private void changeCitySkin(int count) {
+		skinCity = imgCity.getSubimage(count, 600, Game.MAP_WIDTH, 1400);
+	}
+
+	private void changeFireSkin() {
+		imgFire = imgFire == fireSkins[0] ? fireSkins[1]
+				: imgFire == fireSkins[1] ? fireSkins[2] : fireSkins[0];
 	}
 
 	private void updateLblTime(int[] time) {
@@ -34,55 +126,43 @@ public class GamePanel extends JPanel {
 	}
 
 	public void refreshGame(IGame game) {
+		isDown = game.isDown();
 		paintBackground();
 		paintPlataforms(game.getPlatforms());
-		paintAbyss(game.getAbyss());
 		paintFloor(game.getFloor());
 		paintCeilling(game.getCeilling());
 		paintFire(game.getFire());
-		paintHero(game.getPlayerPosition());
+		paintPlayer(game.getPlayerPosition());
 		updateLblTime(game.getTime());
 		repaint();
 	}
 
-	private void paintAbyss(Trap[] abyss) {
-		Graphics g = gameScene.getGraphics();
-		g.setColor(Color.BLACK);
-		for (Trap trap : abyss) {
-			if (trap != null) {
-				g.fillRect(trap.getPosition().x, trap.getPosition().y, trap.getWidth(), trap.getHeigth());
-			}
-		}
-	}
-
 	private void paintFire(Trap fire) {
 		Graphics g = gameScene.getGraphics();
-		g.setColor(Color.RED);
-		g.fillRect(fire.getPosition().x, fire.getPosition().y, fire.getWidth(), fire.getHeigth());
+		g.drawImage(imgFire, fire.getPosition().x, fire.getPosition().y, fire.getWidth() + (Player.WIDTH * 2),
+				fire.getHeight(), this);
+
 	}
 
 	private void paintFloor(Platform[] floor) {
 		Graphics g = gameScene.getGraphics();
-		g.setColor(Color.MAGENTA);
-		drawPlatformsObjects(g, floor);
+		drawPlatformsObjects(g, floor, Color.ORANGE);
 	}
 
 	private void paintCeilling(Platform[] ceilling) {
 		Graphics g = gameScene.getGraphics();
-		g.setColor(Color.ORANGE);
-		drawPlatformsObjects(g, ceilling);
+		drawPlatformsObjects(g, ceilling, Color.ORANGE);
 	}
 
 	private void paintPlataforms(Platform[] platforms) {
 		Graphics g = gameScene.getGraphics();
-		g.setColor(Color.BLUE);
-		drawPlatformsObjects(g, platforms);
+		drawPlatformsObjects(g, platforms, Color.BLACK);
 	}
 
-	private void paintHero(Point playerPosition) {
+	private void paintPlayer(Point playerPosition) {
 		Graphics g = gameScene.getGraphics();
 		g.setColor(Color.GREEN);
-		g.fillRect(playerPosition.x, playerPosition.y, Player.WIDTH, Player.HEIGTH);
+		g.drawImage(imgPlayer, playerPosition.x, playerPosition.y, Player.WIDTH, Player.HEIGTH, this);
 	}
 
 	private void paintBackground() {
@@ -92,7 +172,8 @@ public class GamePanel extends JPanel {
 		Graphics g = gameScene.getGraphics();
 		g.setColor(Color.WHITE);
 		g.fillRect(0, 0, getWidth(), getHeight());
-//		g.drawImage(imgBack, 0, 0, getWidth(), getHeight(), this);
+		g.drawImage(imgSpace, 0, 0, getWidth(), getHeight(), this);
+		g.drawImage(skinCity, 0, 40, getWidth(), getHeight() - 80, this);
 	}
 
 	@Override
@@ -101,10 +182,13 @@ public class GamePanel extends JPanel {
 		g.drawImage(gameScene, 0, 0, this);
 	}
 
-	private void drawPlatformsObjects(Graphics g, Platform[] platformObjects) {
+	private void drawPlatformsObjects(Graphics g, Platform[] platformObjects, Color color) {
 		if (platformObjects.length > 0) {
 			for (Platform platform : platformObjects) {
-				g.fillRect(platform.getPosition().x, platform.getPosition().y, platform.getWidth(), Platform.HIGTH);
+				if (platform != null) {
+					g.drawImage(platformSkin, platform.getPosition().x, platform.getPosition().y, platform.getWidth(),
+							Platform.HEIGTH, this);
+				}
 			}
 		}
 	}
