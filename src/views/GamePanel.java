@@ -5,7 +5,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -26,13 +25,25 @@ import presenters.Command;
 
 public class GamePanel extends JPanel {
 
+	private static final String IMG_PLATFORM_2_PNG = "/res/img/platform2.png";
+	private static final String IMG_PLATFORM_1_PNG = "/res/img/platform1.png";
+	private static final String IMG_FIRE_PNG = "/res/img/fire.png";
+	private static final String IMG_PLAYER_DOWN_PNG = "/res/img/playerDown.png";
+	private static final String IMG_PLAYER_PNG = "/res/img/player.png";
+	private static final String IMG_BACKGROUND_PNG = "/res/img/backGround.png";
+	private static final String IMG_SPACE_PNG = "/res/img/space.png";
+	private static final Font BTN_PAUSE_FONT = new Font("Gill Sans Ultra Bold", Font.PLAIN, 15);
+	private static final Dimension BTN_PAUSE_DIMENSION = new Dimension(40, 22);
+	private static final Font TIME_FONT = new Font("Bell MT", Font.PLAIN, 20);
+	private static final Color LBL_TIME_COLOR = Color.WHITE;
 	private static final int IMG_CITY_WIDTH = 3500;
 	private static final int X_START_IMG_BG = 50;
 	private static final int X_END_IMG_BG = 850;
 	public static final String PLAY_TEXT = "\u00BB";
-	public static final String PAUSED_TEXT = "II";
+	public static final String PAUSED_TEXT = "ll" + "";
 	private static final long serialVersionUID = 1L;
 	private static final String TIME_FORMAT = "00:00:00:00";
+
 	private BufferedImage gameScene;
 	private BufferedImage imgFire;
 	private BufferedImage[] fireSkins;
@@ -48,28 +59,46 @@ public class GamePanel extends JPanel {
 	private Button btnPause;
 	private boolean isDown;
 	private boolean isPaused;
+	private boolean isExecute;
 
 	public GamePanel(ActionListener listener) {
 		setLayout(new BorderLayout());
-		JPanel panel = new JPanel();
-//		JPanel panel = new JPanel(new GridLayout(1, 2, 450, 5));
-		panel.setOpaque(false);
-		lblTime = new JLabel(TIME_FORMAT);
-		lblTime.setForeground(Color.WHITE);
-		lblTime.setFont(new Font("Arial", Font.PLAIN, 20));
-		btnPause = new Button(TypeButton.SUCCESS, PAUSED_TEXT);
-		btnPause.setPreferredSize(new Dimension(25, 25));
-		btnPause.setFocusable(false);
-		btnPause.addActionListener(listener);
-		btnPause.setActionCommand(Command.PAUSE.toString());
-		btnPause.setFont(new Font("Arial", Font.PLAIN, 20));
-		btnPause.setVisible(true);
+		initComponents(listener);
+	}
+
+	private void initComponents(ActionListener listener) {
 		isDown = true;
 		isPaused = false;
 		initSkins();
-		panel.add(lblTime);
+		initPanel(listener);
+	}
+
+	private void initPanel(ActionListener listener) {
+		JPanel panel = new JPanel();
+		panel.setOpaque(false);
+
+		initLblTime(panel);
+		initBtnPause(listener);
+
 		panel.add(btnPause);
 		add(panel, BorderLayout.NORTH);
+	}
+
+	private void initBtnPause(ActionListener listener) {
+		btnPause = new Button(TypeButton.DANGER, PAUSED_TEXT);
+		btnPause.setPreferredSize(BTN_PAUSE_DIMENSION);
+		btnPause.setFocusable(false);
+		btnPause.addActionListener(listener);
+		btnPause.setActionCommand(Command.PAUSE.toString());
+		btnPause.setFont(BTN_PAUSE_FONT);
+		btnPause.setVisible(true);
+	}
+
+	private void initLblTime(JPanel panel) {
+		lblTime = new JLabel(TIME_FORMAT);
+		lblTime.setForeground(LBL_TIME_COLOR);
+		lblTime.setFont(TIME_FONT);
+		panel.add(lblTime);
 	}
 
 	public void setBtnPauseText(String text) {
@@ -78,33 +107,54 @@ public class GamePanel extends JPanel {
 
 	private void initSkins() {
 		try {
-			platformSkins = new BufferedImage[2];
-			platformSkins[0] = ImageIO.read(getClass().getResource("/res/img/plata2.png"));
-			platformSkins[1] = ImageIO.read(getClass().getResource("/res/img/plata.png"));
-
-			BufferedImage image = ImageIO.read(getClass().getResource("/res/img/fire.png"));
-			fireSkins = new BufferedImage[3];
-			fireSkins[0] = image.getSubimage(0, 0, 385 / 3, 537);
-			fireSkins[1] = image.getSubimage((385 / 3) + 5, 0, 385 / 3, 537);
-			fireSkins[2] = image.getSubimage((385 / 3 * 2) + 10, 0, (385 / 3) - 10, 537);
-
-			image = ImageIO.read(getClass().getResource("/res/img/player.png"));
-			playerSkins = new BufferedImage[6];
-			playerSkins[0] = image.getSubimage(0, 0, 123 / 3 - 15, 43);
-			playerSkins[1] = image.getSubimage((123 / 3) + 8, 0, 123 / 3 - 15, 43);
-			playerSkins[2] = image.getSubimage((123 / 3 * 2) + 14, 0, 123 / 3 - 15, 43);
-			image = ImageIO.read(getClass().getResource("/res/img/playerDown.png"));
-			playerSkins[3] = image.getSubimage(0, 0, 123 / 3 - 15, 43);
-			playerSkins[4] = image.getSubimage((123 / 3) + 8, 0, 123 / 3 - 15, 43);
-			playerSkins[5] = image.getSubimage((123 / 3 * 2) + 14, 0, 123 / 3 - 15, 43);
-
-			this.imgSpace = ImageIO.read(getClass().getResource("/res/img/space.png")).getSubimage(0, 0, Game.MAP_WIDTH,
-					Game.MAP_HEIGTH);
-			this.imgCity = ImageIO.read(getClass().getResource("/res/img/backGround.png"));
+			initPlatformSkins();
+			initFireSkins();
+			initPlayerSkins();
+			initBackGroundSkins();
 			initTimer();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	private void initBackGroundSkins() throws IOException {
+		this.imgSpace = ImageIO.read(getClass().getResource(IMG_SPACE_PNG)).getSubimage(0, 0, Game.MAP_WIDTH,
+				Game.MAP_HEIGTH);
+		this.imgCity = ImageIO.read(getClass().getResource(IMG_BACKGROUND_PNG));
+	}
+
+	private void initPlayerSkins() throws IOException {
+		BufferedImage image = ImageIO.read(getClass().getResource(IMG_PLAYER_PNG));
+		playerSkins = new BufferedImage[6];
+		initDownSkins(image);
+		image = ImageIO.read(getClass().getResource(IMG_PLAYER_DOWN_PNG));
+		initUpSkins(image);
+	}
+
+	private void initUpSkins(BufferedImage image) {
+		playerSkins[3] = image.getSubimage(0, 0, 123 / 3 - 15, 43);
+		playerSkins[4] = image.getSubimage((123 / 3) + 8, 0, 123 / 3 - 15, 43);
+		playerSkins[5] = image.getSubimage((123 / 3 * 2) + 14, 0, 123 / 3 - 15, 43);
+	}
+
+	private void initDownSkins(BufferedImage image) {
+		playerSkins[0] = image.getSubimage(0, 0, 123 / 3 - 15, 43);
+		playerSkins[1] = image.getSubimage((123 / 3) + 8, 0, 123 / 3 - 15, 43);
+		playerSkins[2] = image.getSubimage((123 / 3 * 2) + 14, 0, 123 / 3 - 15, 43);
+	}
+
+	private void initFireSkins() throws IOException {
+		BufferedImage image = ImageIO.read(getClass().getResource(IMG_FIRE_PNG));
+		fireSkins = new BufferedImage[3];
+		fireSkins[0] = image.getSubimage(0, 0, 385 / 3, 537);
+		fireSkins[1] = image.getSubimage((385 / 3) + 5, 0, 385 / 3, 537);
+		fireSkins[2] = image.getSubimage((385 / 3 * 2) + 10, 0, (385 / 3) - 10, 537);
+	}
+
+	private void initPlatformSkins() throws IOException {
+		platformSkins = new BufferedImage[2];
+		platformSkins[0] = ImageIO.read(getClass().getResource(IMG_PLATFORM_1_PNG));
+		platformSkins[1] = ImageIO.read(getClass().getResource(IMG_PLATFORM_2_PNG));
 	}
 
 	private void initTimer() {
@@ -113,7 +163,7 @@ public class GamePanel extends JPanel {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (!isPaused) {
+				if (isExecute && !isPaused) {
 					changeFireSkin();
 					changeCitySkin(count);
 					changePlayerSkin();
@@ -153,7 +203,8 @@ public class GamePanel extends JPanel {
 
 	public void refreshGame(IGame game) {
 		isDown = game.isDown();
-		isPaused = game.isPaused();
+		isPaused = game.isPause();
+		isExecute = game.isExecute();
 		paintBackground();
 		paintPlataforms(game.getPlatforms());
 		paintFloor(game.getFloor());
@@ -200,7 +251,7 @@ public class GamePanel extends JPanel {
 			gameScene = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
 		}
 		Graphics g = gameScene.getGraphics();
-		g.setColor(Color.WHITE);
+		g.setColor(LBL_TIME_COLOR);
 		g.fillRect(0, 0, getWidth(), getHeight());
 		g.drawImage(imgSpace, 0, 0, getWidth(), getHeight(), this);
 		g.drawImage(skinCity, 0, 40, getWidth(), getHeight() - 80, this);

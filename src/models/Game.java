@@ -9,27 +9,30 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY)
-public class Game extends Thread implements IGame {
+public class Game extends GameThread implements IGame {
 
 	private static final int CHANGE_DIFFICULTY_TIME = 15000;
 	public static final int MAP_WIDTH = 900;
 	public static final int MAP_HEIGTH = 600;
 	public static final int INITIAL_MAX_PLATFORMS = 10;
-	private static final int INITIAL_VELOCITY = 5;
+	private static final long INITIAL_VELOCITY = 5;
 	private static final int FLOOR_Y_POSITION = MAP_HEIGTH - 90;
 	private static final int CEILLING_Y_POSITION = 30;
 	private static final int FIRE_HEIGTH = MAP_HEIGTH;
 	private static final int FIRE_WIDTH = MAP_WIDTH / 10;
+	private static final int PLATFORM_COLLISION = 0;
+	private static final int PLATFORM_FORNT_COLLISION = 1;
+	private static final int FLOOR_COLLISION = 2;
+	private static final int FLOOR_FRONT_COLLISION = 3;
+	private static final int CEILLING_COLLISION = 4;
+	private static final int CEILLING_FRONT_COLLISION = 5;
 	private static final Random randomGenerator = new Random();
 
 	// Variables del juego
-	private boolean isPlay;
-	private boolean isPaused;
-	private int maxPlatforms;
-	private int velocity;
-
 	@JsonIgnore
 	private long lapseOfTime;
+	private int maxPlatforms;
+	private int[] objectCollision;
 
 	// Objetos del juego
 	private Player player;
@@ -40,62 +43,30 @@ public class Game extends Thread implements IGame {
 	private Trap abyss[];
 	private Chronometer chronometer;
 
-	// Detecci�n de colisiones
-	private int platformCollision;
-	private int platformForntCollision;
-	private int floorCollision;
-	private int floorFrontCollision;
-	private int ceillingCollision;
-	private int ceillingFrontCollision;
-
 	public Game() {
+		super(INITIAL_VELOCITY);
 		initGame();
 	}
 
-//	public Game(boolean play, int maxPlatforms, int velocity, long lapseOfTime, Player player,
-//			ArrayList<Platform> platforms, ArrayList<Platform> floor, ArrayList<Platform> ceilling, Trap fire,
-//			Trap[] abyss, Chronometer chronometer, int platformCollision, int platformForntCollision,
-//			int floorCollision, int floorFrontCollision, int ceillingCollision, int ceillingFrontCollision) {
-//		super();
-//		this.play = play;
-//		this.maxPlatforms = maxPlatforms;
-//		this.velocity = velocity;
-//		this.lapseOfTime = lapseOfTime;
-//		this.player = player;
-//		this.platforms = platforms;
-////		for (Platform platform : platforms) {
-////			this.platforms.add(platform);
-////		}
-//		this.floor = floor;
-//		this.ceilling = ceilling;
-//		this.fire = fire;
-//		this.abyss = abyss;
-//		this.chronometer = chronometer;
-//		this.platformCollision = platformCollision;
-//		this.platformForntCollision = platformForntCollision;
-//		this.floorCollision = floorCollision;
-//		this.floorFrontCollision = floorFrontCollision;
-//		this.ceillingCollision = ceillingCollision;
-//		this.ceillingFrontCollision = ceillingFrontCollision;
-//	}
-
 	private void initGame() {
-		velocity = INITIAL_VELOCITY;
-		maxPlatforms = INITIAL_MAX_PLATFORMS;
 		chronometer = new Chronometer();
+		if (!chronometer.isExecute) {
+			initRun();
+		}
+		maxPlatforms = INITIAL_MAX_PLATFORMS;
 		player = new Player();
 		platforms = new ArrayList<>();
 		floor = new ArrayList<>();
 		ceilling = new ArrayList<>();
 		createAbyss();
 		fire = new Trap(0, 0, FIRE_WIDTH, FIRE_HEIGTH);
-		isPaused = false;
-		platformCollision = -1;
-		platformForntCollision = -1;
-		floorCollision = -1;
-		floorFrontCollision = -1;
-		ceillingCollision = -1;
-		ceillingFrontCollision = -1;
+		objectCollision = new int[6];
+		objectCollision[0] = -1; // platformCollision;
+		objectCollision[1] = -1; // platformForntCollision
+		objectCollision[2] = -1; // floorCollision
+		objectCollision[3] = -1; // floorFrontCollision
+		objectCollision[4] = -1; // ceillingCollision
+		objectCollision[5] = -1; // ceillingFrontCollision
 	}
 
 	private void createAbyss() {
@@ -106,52 +77,26 @@ public class Game extends Thread implements IGame {
 	}
 
 	@Override
-	public void run() {
-		initRun();
-		while (isPlay) {
-			player.move();
-			movePlatformObjects();
-			checkCollisions();
-			sleeping();
-			increaseDifficulty();
-			synchronized (this) {
-				if (isPaused) {
-					try {
-						wait();
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-					if (!isPlay) {
-						break;
-					}
-				}
-			}
-		}
-//		synchronized (this) {
-//			FileManager.saveGame(this);
-////			FileManager.loadGame();
-//		}
+	public void executeTask() {
+		player.move();
+		movePlatformObjects();
+		checkCollisions();
+		increaseDifficulty();
 	}
 
-	public synchronized void stopped() {
-		isPlay = false;
-		notifyAll();
+	@Override
+	public synchronized void resume() {
+		chronometer.resume();
+		super.resume();
 	}
 
+	@Override
 	public synchronized void pause() {
-		isPaused = true;
 		chronometer.pause();
-		notifyAll();
-	}
-
-	public synchronized void resumed() {
-		isPaused = false;
-		chronometer.resumed();
-		notifyAll();
+		super.pause();
 	}
 
 	private void initRun() {
-		isPlay = true;
 		chronometer.start();
 		lapseOfTime = System.currentTimeMillis();
 	}
@@ -179,8 +124,8 @@ public class Game extends Thread implements IGame {
 	}
 
 	private void gameOver() {
-		isPlay = false;
-		chronometer.stopped();
+		isExecute = false;
+		chronometer.stop();
 	}
 
 	private void movePlatformObjects() {
@@ -190,46 +135,10 @@ public class Game extends Thread implements IGame {
 	}
 
 	private void checkCeillingCollisions() {
-		searcchCeillingCollisions();
-		searchCeillingFrontCollisions();
-		verifyCeillingCollision();
-		verifyCeillingFrontCollision();
-	}
-
-	private void searchCeillingFrontCollisions() {
-		for (int i = 0; i < ceilling.size(); i++) {
-			if (player.checkFrontCollision(ceilling.get(i))) {
-				ceillingFrontCollision = i;
-			}
-		}
-	}
-
-	private void verifyCeillingFrontCollision() {
-		try {
-			if (!player.checkFrontCollision(ceilling.get(ceillingFrontCollision))) {
-				player.setFrontColliding(false);
-				ceillingFrontCollision = -1;
-			}
-		} catch (IndexOutOfBoundsException e) {
-		}
-	}
-
-	private void verifyCeillingCollision() {
-		try {
-			if (!player.checkCollision(ceilling.get(ceillingCollision))) {
-				player.setColliding(false);
-				ceillingCollision = -1;
-			}
-		} catch (IndexOutOfBoundsException e) {
-		}
-	}
-
-	private void searcchCeillingCollisions() {
-		for (int i = 0; i < ceilling.size(); i++) {
-			if (player.checkCollision(ceilling.get(i))) {
-				ceillingCollision = i;
-			}
-		}
+		searchCollisons(CEILLING_COLLISION, ceilling);
+		searchFrontCollisions(CEILLING_FRONT_COLLISION, ceilling);
+		verifyCollision(CEILLING_COLLISION, ceilling);
+		verifyFrontCollision(CEILLING_FRONT_COLLISION, ceilling);
 	}
 
 	private void moveCeilling() {
@@ -250,46 +159,10 @@ public class Game extends Thread implements IGame {
 	}
 
 	private void checkFloorCollisions() {
-		searcchFloorCollisions();
-		searchFloorFrontCollisions();
-		verifyFloorCollision();
-		verifyFloorFrontCollision();
-	}
-
-	private void searchFloorFrontCollisions() {
-		for (int i = 0; i < floor.size(); i++) {
-			if (player.checkFrontCollision(floor.get(i))) {
-				floorFrontCollision = i;
-			}
-		}
-	}
-
-	private void verifyFloorFrontCollision() {
-		try {
-			if (!player.checkFrontCollision(floor.get(floorFrontCollision))) {
-				player.setFrontColliding(false);
-				floorFrontCollision = -1;
-			}
-		} catch (IndexOutOfBoundsException e) {
-		}
-	}
-
-	private void verifyFloorCollision() {
-		try {
-			if (!player.checkCollision(floor.get(floorCollision))) {
-				player.setColliding(false);
-				floorCollision = -1;
-			}
-		} catch (IndexOutOfBoundsException e) {
-		}
-	}
-
-	private void searcchFloorCollisions() {
-		for (int i = 0; i < floor.size(); i++) {
-			if (player.checkCollision(floor.get(i))) {
-				floorCollision = i;
-			}
-		}
+		searchCollisons(FLOOR_COLLISION, floor);
+		searchFrontCollisions(FLOOR_FRONT_COLLISION, floor);
+		verifyCollision(FLOOR_COLLISION, floor);
+		verifyFrontCollision(FLOOR_FRONT_COLLISION, floor);
 	}
 
 	private void moveFloor() {
@@ -310,53 +183,45 @@ public class Game extends Thread implements IGame {
 	}
 
 	private void checkPlatformsCollisions() {
-		searchCollisons();
-		searchFrontCollisions();
-		verifyCollision();
-		verifyFrontCollision();
+		searchCollisons(PLATFORM_COLLISION, platforms);
+		searchFrontCollisions(PLATFORM_FORNT_COLLISION, platforms);
+		verifyCollision(PLATFORM_COLLISION, platforms);
+		verifyFrontCollision(PLATFORM_FORNT_COLLISION, platforms);
 	}
 
-	private void verifyFrontCollision() {
+	private void verifyFrontCollision(int colliderIndex, ArrayList<Platform> colliders) {
 		try {
-			if (!player.checkFrontCollision(platforms.get(platformForntCollision))) {
+			if (!player.checkFrontCollision(platforms.get(objectCollision[1]))) {
 				player.setFrontColliding(false);
-				platformForntCollision = -1;
+				objectCollision[1] = -1;
 			}
 		} catch (IndexOutOfBoundsException e) {
 		}
 	}
 
-	private void searchFrontCollisions() {
+	private void searchFrontCollisions(int colliderIndex, ArrayList<Platform> colliders) {
 		for (int i = 0; i < platforms.size(); i++) {
 			if (player.checkFrontCollision(platforms.get(i))) {
-				platformForntCollision = i;
+				objectCollision[1] = i;
 			}
 		}
 	}
 
-	private void verifyCollision() {
+	private void verifyCollision(int colliderIndex, ArrayList<Platform> colliders) {
 		try {
-			if (!player.checkCollision(platforms.get(platformCollision))) {
+			if (!player.checkCollision(colliders.get(objectCollision[colliderIndex]))) {
 				player.setColliding(false);
-				platformCollision = -1;
+				objectCollision[colliderIndex] = -1;
 			}
 		} catch (IndexOutOfBoundsException e) {
 		}
 	}
 
-	private void searchCollisons() {
-		for (int i = 0; i < platforms.size(); i++) {
-			if (player.checkCollision(platforms.get(i))) {
-				platformCollision = i;
+	private void searchCollisons(int colliderIndex, ArrayList<Platform> colliders) {
+		for (int i = 0; i < colliders.size(); i++) {
+			if (player.checkCollision(colliders.get(i))) {
+				objectCollision[colliderIndex] = i;
 			}
-		}
-	}
-
-	private void sleeping() {
-		try {
-			Thread.sleep(velocity);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
 		}
 	}
 
@@ -386,13 +251,13 @@ public class Game extends Thread implements IGame {
 		player.changeGravity();
 	}
 
-	public boolean isPlay() {
-		return isPlay;
+	public boolean isExecute() {
+		return isExecute;
 	}
 
 	public void increaseDifficulty() {
 		if (System.currentTimeMillis() - lapseOfTime > CHANGE_DIFFICULTY_TIME) {
-			velocity -= velocity > 1 ? 1 : 0;
+			sleepTime -= sleepTime > 1 ? 1 : 0;
 			maxPlatforms++;
 			lapseOfTime = System.currentTimeMillis();
 		}
@@ -402,32 +267,28 @@ public class Game extends Thread implements IGame {
 		return maxPlatforms;
 	}
 
-	public int getVelocity() {
-		return velocity;
-	}
-
 	public int getPlatformCollision() {
-		return platformCollision;
+		return objectCollision[0];
 	}
 
 	public int getPlatformForntCollision() {
-		return platformForntCollision;
+		return objectCollision[1];
 	}
 
 	public int getFloorCollision() {
-		return floorCollision;
+		return objectCollision[2];
 	}
 
 	public int getFloorFrontCollision() {
-		return floorFrontCollision;
+		return objectCollision[3];
 	}
 
 	public int getCeillingCollision() {
-		return ceillingCollision;
+		return objectCollision[4];
 	}
 
 	public int getCeillingFrontCollision() {
-		return ceillingFrontCollision;
+		return objectCollision[5];
 	}
 
 	@Override
@@ -475,7 +336,7 @@ public class Game extends Thread implements IGame {
 	}
 
 	@Override
-	public boolean isPaused() {
+	public boolean isPause() {
 		return isPaused;
 	}
 }

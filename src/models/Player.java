@@ -18,17 +18,14 @@ public class Player {
 	public static final Point STARTING_POSITION = new Point(Game.MAP_WIDTH / 2, 50);
 	private boolean isColliding;
 	private boolean isFrontColliding;
-//	private boolean isAlive;
-//	private Point position;
+	private boolean isDown;
 	private int x;
 	private int y;
-	private boolean isDown;
 
 	public Player() {
 		x = STARTING_POSITION.x;
 		y = STARTING_POSITION.y;
 		this.isDown = true;
-//		isAlive = true;
 		isColliding = false;
 		isFrontColliding = false;
 	}
@@ -37,7 +34,6 @@ public class Player {
 		x = position.x;
 		y = position.y;
 		this.isDown = true;
-//		isAlive = true;
 		isColliding = false;
 		isFrontColliding = false;
 	}
