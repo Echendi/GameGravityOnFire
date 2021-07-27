@@ -33,7 +33,7 @@ public abstract class GameThread implements Runnable {
 		notifyAll();
 	}
 
-	public abstract void executeTask();
+	protected abstract void executeTask();
 
 	@Override
 	public void run() {
@@ -58,5 +58,4 @@ public abstract class GameThread implements Runnable {
 			}
 		}
 	}
-
 }

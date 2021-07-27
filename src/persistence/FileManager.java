@@ -2,39 +2,32 @@ package persistence;
 
 import java.io.File;
 import java.io.IOException;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
-
 import models.Chronometer;
 import models.Collider;
 import models.Game;
 import models.Player;
+import models.ScoreList;
 
 public class FileManager {
-	public static final String PATH = "data/game.json";
+	public static final String GAME_PATH = "data/game.json";
+	public static final String SCORE_PATH = "data/score.json";
 
-//	public static Game loadGame() {
-//		FileReader jsonAll;
-//		Game game;
-//		try {
-//			jsonAll = new FileReader(PATH);
-//			game = new Gson().fromJson(jsonAll, Game.class);
-//			jsonAll.close();
-//
-////			Platform[] plat = json.fromJson(platforms, Platform[].class);
-//			return game;
-//		} catch (FileNotFoundException e) {
-//			e.printStackTrace();
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
-//		return new Game();
-//	}
+	public static Game loadGame() {
+		try {
+			final ObjectMapper mapper = new ObjectMapper();
+			Game game = mapper.readValue(new File(GAME_PATH), Game.class);
+			return game;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 
 	private static class IgnoreInheritedIntrospector extends JacksonAnnotationIntrospector {
 		private static final long serialVersionUID = 1L;
@@ -52,7 +45,30 @@ public class FileManager {
 		mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
 		mapper.setAnnotationIntrospector(new IgnoreInheritedIntrospector());
 		try {
-			mapper.writerWithDefaultPrettyPrinter().writeValue(new File(PATH), game);
+			mapper.writerWithDefaultPrettyPrinter().writeValue(new File(GAME_PATH), game);
+		} catch (JsonProcessingException e1) {
+			e1.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static ScoreList loadScoreList() {
+		try {
+			final ObjectMapper mapper = new ObjectMapper();
+			ScoreList scores = mapper.readValue(new File(SCORE_PATH), ScoreList.class);
+			return scores;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	public static void saveScores(ScoreList scores) {
+		final ObjectMapper mapper = new ObjectMapper();
+		mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
+		try {
+			mapper.writerWithDefaultPrettyPrinter().writeValue(new File(SCORE_PATH), scores);
 		} catch (JsonProcessingException e1) {
 			e1.printStackTrace();
 		} catch (IOException e) {

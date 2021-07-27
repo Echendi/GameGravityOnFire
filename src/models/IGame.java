@@ -16,6 +16,12 @@ public interface IGame {
 
 	public int[] getTime();
 
+	public int[] getBestScore();
+
+	public int getCoins();
+
+	public int getParcialCoins();
+
 	public Trap[] getAbyss();
 
 	public boolean isDown();

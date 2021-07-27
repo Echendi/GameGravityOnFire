@@ -49,6 +49,11 @@ public class Chronometer extends GameThread {
 		return new int[] { hours, minuts, seconds, millis };
 	}
 
+	@JsonIgnore
+	public int getTimeInSeconds() {
+		return (hours * 3600) + (minuts * 60) + seconds;
+	}
+
 	@Override
 	public void executeTask() {
 		millis++;

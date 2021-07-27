@@ -1,5 +1,5 @@
 package presenters;
 
 public enum Command {
-	PAUSE
+	PAUSE, EXIT, START, INSTRUCTIONS, STORE, MENU
 }

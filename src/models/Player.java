@@ -64,7 +64,7 @@ public class Player {
 	}
 
 	private boolean checkLimits() {
-		return ((isDown && (y + HEIGTH + Y_MOVE_SIZE * 40) < Game.MAP_HEIGTH)) || (!isDown && y - Y_MOVE_SIZE > 0);
+		return ((isDown && (y + HEIGTH + Y_MOVE_SIZE ) < Game.MAP_HEIGTH)) || (!isDown && y - Y_MOVE_SIZE > 0);
 	}
 
 	public boolean checkCollision(Collider collider) {
@@ -100,6 +100,7 @@ public class Player {
 		return isColliding;
 	}
 
+	@JsonIgnore
 	public boolean isDown() {
 		return isDown;
 	}

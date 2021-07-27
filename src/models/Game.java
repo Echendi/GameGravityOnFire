@@ -8,15 +8,19 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import persistence.FileManager;
+
 @JsonAutoDetect(fieldVisibility = Visibility.ANY)
 public class Game extends GameThread implements IGame {
 
-	private static final int CHANGE_DIFFICULTY_TIME = 15000;
+	private static final int SECONDS_PER_COIN = 10;
 	public static final int MAP_WIDTH = 900;
 	public static final int MAP_HEIGTH = 600;
 	public static final int INITIAL_MAX_PLATFORMS = 10;
+	private static final int NO_COLLISION = -1;
+	private static final int CHANGE_DIFFICULTY_TIME = 15000;
 	private static final long INITIAL_VELOCITY = 5;
-	private static final int FLOOR_Y_POSITION = MAP_HEIGTH - 90;
+	private static final int FLOOR_Y_POSITION = MAP_HEIGTH - 55;
 	private static final int CEILLING_Y_POSITION = 30;
 	private static final int FIRE_HEIGTH = MAP_HEIGTH;
 	private static final int FIRE_WIDTH = MAP_WIDTH / 10;
@@ -36,6 +40,7 @@ public class Game extends GameThread implements IGame {
 
 	// Objetos del juego
 	private Player player;
+	private ScoreList scoreList;
 	private ArrayList<Platform> platforms;
 	private ArrayList<Platform> floor;
 	private ArrayList<Platform> ceilling;
@@ -43,9 +48,10 @@ public class Game extends GameThread implements IGame {
 	private Trap abyss[];
 	private Chronometer chronometer;
 
-	public Game() {
+	public Game(ScoreList scoreList) {
 		super(INITIAL_VELOCITY);
-		initGame();
+		chronometer = new Chronometer();
+		this.scoreList = scoreList;
 	}
 
 	@Override
@@ -59,8 +65,8 @@ public class Game extends GameThread implements IGame {
 	private void initGame() {
 		maxPlatforms = INITIAL_MAX_PLATFORMS;
 		player = new Player();
+		isExecute = true;
 		fire = new Trap(0, 0, FIRE_WIDTH, FIRE_HEIGTH);
-		initChronometer();
 		initCollidersPlatforms();
 		createAbyss();
 		initObjectCollisionsIndex();
@@ -78,13 +84,27 @@ public class Game extends GameThread implements IGame {
 		super.pause();
 	}
 
+	@Override
+	public void start() {
+		initGame();
+		chronometer.resetTime();
+		initChronometer();
+		super.start();
+	}
+
 	private void gameOver() {
 		isExecute = false;
 		chronometer.stop();
+		scoreList.addCoins(calculateCoins());
+		scoreList.addScore(chronometer.getTime());
+		FileManager.saveScores(scoreList);
+	}
+
+	private int calculateCoins() {
+		return chronometer.getTimeInSeconds() / SECONDS_PER_COIN;
 	}
 
 	private void initChronometer() {
-		chronometer = new Chronometer();
 		if (!chronometer.isExecute) {
 			initRun();
 		}
@@ -98,12 +118,12 @@ public class Game extends GameThread implements IGame {
 
 	private void initObjectCollisionsIndex() {
 		objectCollisionIndex = new int[6];
-		objectCollisionIndex[0] = -1; // platformCollision;
-		objectCollisionIndex[1] = -1; // platformForntCollision
-		objectCollisionIndex[2] = -1; // floorCollision
-		objectCollisionIndex[3] = -1; // floorFrontCollision
-		objectCollisionIndex[4] = -1; // ceillingCollision
-		objectCollisionIndex[5] = -1; // ceillingFrontCollision
+		objectCollisionIndex[PLATFORM_COLLISION] = NO_COLLISION;
+		objectCollisionIndex[PLATFORM_FORNT_COLLISION] = NO_COLLISION;
+		objectCollisionIndex[FLOOR_COLLISION] = NO_COLLISION;
+		objectCollisionIndex[FLOOR_FRONT_COLLISION] = NO_COLLISION;
+		objectCollisionIndex[CEILLING_COLLISION] = NO_COLLISION;
+		objectCollisionIndex[CEILLING_FRONT_COLLISION] = NO_COLLISION;
 	}
 
 	private void initRun() {
@@ -149,7 +169,7 @@ public class Game extends GameThread implements IGame {
 		try {
 			if (!player.checkFrontCollision(colliders.get(objectCollisionIndex[colliderIndex]))) {
 				player.setFrontColliding(false);
-				objectCollisionIndex[colliderIndex] = -1;
+				objectCollisionIndex[colliderIndex] = NO_COLLISION;
 			}
 		} catch (IndexOutOfBoundsException e) {
 		}
@@ -167,7 +187,7 @@ public class Game extends GameThread implements IGame {
 		try {
 			if (!player.checkCollision(colliders.get(objectCollisionIndex[colliderIndex]))) {
 				player.setColliding(false);
-				objectCollisionIndex[colliderIndex] = -1;
+				objectCollisionIndex[colliderIndex] = NO_COLLISION;
 			}
 		} catch (IndexOutOfBoundsException e) {
 		}
@@ -261,32 +281,14 @@ public class Game extends GameThread implements IGame {
 		return isExecute;
 	}
 
-	public int getMaxPlatforms() {
-		return maxPlatforms;
+	@Override
+	public boolean isDown() {
+		return player.isDown();
 	}
 
-	public int getPlatformCollision() {
-		return objectCollisionIndex[0];
-	}
-
-	public int getPlatformForntCollision() {
-		return objectCollisionIndex[1];
-	}
-
-	public int getFloorCollision() {
-		return objectCollisionIndex[2];
-	}
-
-	public int getFloorFrontCollision() {
-		return objectCollisionIndex[3];
-	}
-
-	public int getCeillingCollision() {
-		return objectCollisionIndex[4];
-	}
-
-	public int getCeillingFrontCollision() {
-		return objectCollisionIndex[5];
+	@Override
+	public boolean isPause() {
+		return isPaused;
 	}
 
 	@Override
@@ -329,12 +331,18 @@ public class Game extends GameThread implements IGame {
 	}
 
 	@Override
-	public boolean isDown() {
-		return player.isDown();
+	public int[] getBestScore() {
+		return scoreList.getBestScore();
 	}
 
 	@Override
-	public boolean isPause() {
-		return isPaused;
+	public int getCoins() {
+		return scoreList.getCoins();
+	}
+
+	@JsonIgnore
+	@Override
+	public int getParcialCoins() {
+		return calculateCoins();
 	}
 }
