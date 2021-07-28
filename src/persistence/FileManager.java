@@ -12,11 +12,11 @@ import models.Chronometer;
 import models.Collider;
 import models.Game;
 import models.Player;
-import models.ScoreList;
+import models.GameData;
 
 public class FileManager {
-	public static final String GAME_PATH = "data/game.json";
-	public static final String SCORE_PATH = "data/score.json";
+	public static final String GAME_PATH = "data/gameSaved.json";
+	public static final String DATA_PATH = "data/gameData.json";
 
 	public static Game loadGame() {
 		try {
@@ -53,22 +53,22 @@ public class FileManager {
 		}
 	}
 
-	public static ScoreList loadScoreList() {
+	public static GameData loadScoreList() {
 		try {
 			final ObjectMapper mapper = new ObjectMapper();
-			ScoreList scores = mapper.readValue(new File(SCORE_PATH), ScoreList.class);
-			return scores;
+			GameData data = mapper.readValue(new File(DATA_PATH), GameData.class);
+			return data;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		return null;
 	}
 
-	public static void saveScores(ScoreList scores) {
+	public static void saveScores(GameData data) {
 		final ObjectMapper mapper = new ObjectMapper();
 		mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
 		try {
-			mapper.writerWithDefaultPrettyPrinter().writeValue(new File(SCORE_PATH), scores);
+			mapper.writerWithDefaultPrettyPrinter().writeValue(new File(DATA_PATH), data);
 		} catch (JsonProcessingException e1) {
 			e1.printStackTrace();
 		} catch (IOException e) {

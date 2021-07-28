@@ -30,4 +30,6 @@ public interface IGame {
 
 	public boolean isExecute();
 
+	public int getActualSkin();
+
 }

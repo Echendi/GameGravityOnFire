@@ -87,9 +87,17 @@ public class MainFrame extends JFrame {
 		timerUpdate.stop();
 	}
 
+	public void resetCount() {
+		gamePanel.resetCount();
+	}
+
 	public void exit() {
 		this.dispose();
 		System.exit(0);
+	}
+
+	public void setActualSkin(int actualSkin) {
+		gamePanel.setActualSkin(actualSkin);
 	}
 
 }

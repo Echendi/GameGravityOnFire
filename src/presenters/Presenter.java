@@ -23,7 +23,6 @@ public class Presenter extends KeyAdapter implements ActionListener {
 	private Game game;
 
 	public Presenter() {
-//		this.game = new Game();
 		view = new MainFrame(this, this);
 		view.changeCard(MainFrame.MENU_CARD);
 	}
@@ -50,8 +49,10 @@ public class Presenter extends KeyAdapter implements ActionListener {
 	private void start() {
 		view.changeCard(MainFrame.GAME_CARD);
 		view.setVisibleLblGameOver(false);
+		view.resetCount();
 		game = new Game(FileManager.loadScoreList());
 		game.start();
+		view.setActualSkin(game.getActualSkin());
 		view.refreshGame(game);
 	}
 

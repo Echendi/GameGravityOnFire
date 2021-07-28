@@ -31,13 +31,12 @@ import presenters.Command;
 
 public class GamePanel extends JPanel {
 
-	private static final String COINS_FORMAT = "$ 0";
+	private static final String COINS_FORMAT = " $ ";
 	private static final String IMG_PLATFORM_2_PNG = "/res/img/platform2.png";
 	private static final String IMG_PLATFORM_1_PNG = "/res/img/platform1.png";
 	private static final String IMG_FIRE_PNG = "/res/img/fire.png";
-	private static final String IMG_PLAYER_DOWN_PNG = "/res/img/playerDown.png";
-	private static final String IMG_PLAYER_PNG = "/res/img/player.png";
-	private static final String IMG_BACKGROUND_PNG = "/res/img/backGround.png";
+	private static final String IMG_PLAYER_PNG = "/res/img/players.png";
+	private static final String IMG_BACKGROUND_PNG = "/res/img/bg.png";
 	private static final String IMG_SPACE_PNG = "/res/img/space.png";
 
 	private static final Font BTN_PAUSE_FONT = new Font("Gill Sans Ultra Bold", Font.PLAIN, 15);
@@ -53,12 +52,14 @@ public class GamePanel extends JPanel {
 	private static final Color LBL_COLOR = Color.WHITE;
 	private static final String TIME_FORMAT = "00:00:00:00";
 
-	private static final int IMG_CITY_WIDTH = 3400;
+	private static final int IMG_CITY_WIDTH = 3700;
 	private static final int Y_START_IMG_BG = 0;
-	private static final int Y_END_IMG_BG = 850;
+	private static final int Y_END_IMG_BG = 900;
 
 	private static final long serialVersionUID = 1L;
 	private static final String MENU_TEXT = "MENU";
+	private static final int IMG_PLAYER_WIDTH = 30;
+	private static final int IMG_PLAYER_HEIGTH = 44;
 
 	private BufferedImage gameScene;
 	private BufferedImage imgFire;
@@ -69,7 +70,7 @@ public class GamePanel extends JPanel {
 	private BufferedImage platformSkin;
 	private BufferedImage[] platformSkins;
 	private BufferedImage imgPlayer;
-	private BufferedImage[] playerSkins;
+	private BufferedImage[][] playerSkins;
 
 	private Timer timer;
 	private Clip clip;
@@ -79,14 +80,24 @@ public class GamePanel extends JPanel {
 	private Button btnMenu;
 	private Button btnPause;
 	private Button btnExit;
+	private int actualSkin;
 	private boolean isDown;
 	private boolean isPaused;
+	private Clip clipGameOver;
+	private int count;
 
 	public GamePanel() {
 		setLayout(new BorderLayout());
+		try {
+			clipGameOver = AudioSystem.getClip();
+		} catch (LineUnavailableException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public void initComponents(ActionListener listener) {
+		actualSkin = 0;
 		isDown = true;
 		isPaused = false;
 		initSkins();
@@ -197,22 +208,24 @@ public class GamePanel extends JPanel {
 
 	private void initPlayerSkins() throws IOException {
 		BufferedImage image = ImageIO.read(getClass().getResource(IMG_PLAYER_PNG));
-		playerSkins = new BufferedImage[6];
-		initDownSkins(image);
-		image = ImageIO.read(getClass().getResource(IMG_PLAYER_DOWN_PNG));
-		initUpSkins(image);
+		playerSkins = new BufferedImage[11][6];
+		createPlayerSkins(image);
 	}
 
-	private void initUpSkins(BufferedImage image) {
-		playerSkins[3] = image.getSubimage(0, 0, 123 / 3 - 15, 43);
-		playerSkins[4] = image.getSubimage((123 / 3) + 8, 0, 123 / 3 - 15, 43);
-		playerSkins[5] = image.getSubimage((123 / 3 * 2) + 14, 0, 123 / 3 - 15, 43);
-	}
-
-	private void initDownSkins(BufferedImage image) {
-		playerSkins[0] = image.getSubimage(0, 0, 123 / 3 - 15, 43);
-		playerSkins[1] = image.getSubimage((123 / 3) + 8, 0, 123 / 3 - 15, 43);
-		playerSkins[2] = image.getSubimage((123 / 3 * 2) + 14, 0, 123 / 3 - 15, 43);
+	private void createPlayerSkins(BufferedImage image) {
+		for (int i = 0; i < playerSkins.length; i++) {
+			playerSkins[i][0] = image.getSubimage(0, IMG_PLAYER_HEIGTH * i, IMG_PLAYER_WIDTH, IMG_PLAYER_HEIGTH - 1);
+			playerSkins[i][1] = image.getSubimage(IMG_PLAYER_WIDTH, IMG_PLAYER_HEIGTH * i, IMG_PLAYER_WIDTH - 1,
+					IMG_PLAYER_HEIGTH - 1);
+			playerSkins[i][2] = image.getSubimage(IMG_PLAYER_WIDTH * 2, IMG_PLAYER_HEIGTH * i, IMG_PLAYER_WIDTH,
+					IMG_PLAYER_HEIGTH - 1);
+			playerSkins[i][3] = image.getSubimage(IMG_PLAYER_WIDTH * 3 + 2, IMG_PLAYER_HEIGTH * i, IMG_PLAYER_WIDTH,
+					IMG_PLAYER_HEIGTH - 1);
+			playerSkins[i][4] = image.getSubimage(IMG_PLAYER_WIDTH * 4 + 2, IMG_PLAYER_HEIGTH * i, IMG_PLAYER_WIDTH - 1,
+					IMG_PLAYER_HEIGTH - 1);
+			playerSkins[i][5] = image.getSubimage(IMG_PLAYER_WIDTH * 5 + 3, IMG_PLAYER_HEIGTH * i, IMG_PLAYER_WIDTH,
+					IMG_PLAYER_HEIGTH - 1);
+		}
 	}
 
 	private void initFireSkins() throws IOException {
@@ -260,11 +273,11 @@ public class GamePanel extends JPanel {
 
 	private void changePlayerSkin() {
 		if (isDown) {
-			imgPlayer = imgPlayer == playerSkins[0] ? playerSkins[1]
-					: imgPlayer == playerSkins[1] ? playerSkins[2] : playerSkins[0];
+			imgPlayer = imgPlayer == playerSkins[actualSkin][0] ? playerSkins[actualSkin][1]
+					: imgPlayer == playerSkins[actualSkin][1] ? playerSkins[actualSkin][2] : playerSkins[actualSkin][0];
 		} else {
-			imgPlayer = imgPlayer == playerSkins[3] ? playerSkins[4]
-					: imgPlayer == playerSkins[4] ? playerSkins[5] : playerSkins[3];
+			imgPlayer = imgPlayer == playerSkins[actualSkin][3] ? playerSkins[actualSkin][4]
+					: imgPlayer == playerSkins[actualSkin][4] ? playerSkins[actualSkin][5] : playerSkins[actualSkin][3];
 		}
 	}
 
@@ -316,10 +329,11 @@ public class GamePanel extends JPanel {
 		panelGameOver.setVisible(true);
 		panelGameOver.updateScoreData(formatTime(game.getTime()), formatTime(game.getBestScore()),
 				game.getParcialCoins());
+		startGameOverMusic();
 	}
 
 	public void updateLblCoins(int coins) {
-		lblCoins.setText(" $ " + coins);
+		lblCoins.setText(COINS_FORMAT + coins);
 	}
 
 	private void paintFire(Trap fire) {
@@ -382,5 +396,29 @@ public class GamePanel extends JPanel {
 
 	public void stopMusic() {
 		clip.stop();
+	}
+
+	private void startGameOverMusic() {
+		try {
+			if (!clipGameOver.isRunning() && count == 1) {
+				count++;
+				clipGameOver = AudioSystem.getClip();
+				AudioInputStream inputStream = AudioSystem
+						.getAudioInputStream(getClass().getResourceAsStream("/res/media/gameOver.wav"));
+				clipGameOver.open(inputStream);
+				clipGameOver.start();
+			}
+
+		} catch (LineUnavailableException | UnsupportedAudioFileException | IOException e1) {
+			e1.printStackTrace();
+		}
+	}
+
+	public void resetCount() {
+		count = 1;
+	}
+
+	public void setActualSkin(int actualSkin) {
+		this.actualSkin = actualSkin;
 	}
 }

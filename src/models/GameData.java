@@ -6,13 +6,15 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY)
-public class ScoreList {
-
+public class GameData {
+	private int actualSkin;
+	private ArrayList<Integer> purchasedSkins;
 	private ArrayList<int[]> scoreList;
 	private int coins;
 
-	public ScoreList() {
+	public GameData() {
 		scoreList = new ArrayList<int[]>();
+		purchasedSkins = new ArrayList<>();
 	}
 
 	@JsonIgnore
@@ -34,11 +36,23 @@ public class ScoreList {
 		scoreList.add(score);
 	}
 
+	public void addSkin(int newSkin) {
+		purchasedSkins.add(newSkin);
+	}
+
 	public void addCoins(int newCoins) {
 		coins += newCoins;
 	}
 
 	public int getCoins() {
 		return coins;
+	}
+
+	public int getActualSkin() {
+		return actualSkin;
+	}
+
+	public void changeSkin(int skin) {
+		actualSkin = skin;
 	}
 }

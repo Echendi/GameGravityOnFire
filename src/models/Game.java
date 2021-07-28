@@ -13,7 +13,7 @@ import persistence.FileManager;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY)
 public class Game extends GameThread implements IGame {
 
-	private static final int SECONDS_PER_COIN = 10;
+	private static final int SECONDS_PER_COIN = 2;
 	public static final int MAP_WIDTH = 900;
 	public static final int MAP_HEIGTH = 600;
 	public static final int INITIAL_MAX_PLATFORMS = 10;
@@ -32,15 +32,12 @@ public class Game extends GameThread implements IGame {
 	private static final int CEILLING_FRONT_COLLISION = 5;
 	private static final Random randomGenerator = new Random();
 
-	// Variables del juego
 	@JsonIgnore
 	private long lapseOfTime;
 	private int maxPlatforms;
 	private int[] objectCollisionIndex;
-
-	// Objetos del juego
 	private Player player;
-	private ScoreList scoreList;
+	private GameData data;
 	private ArrayList<Platform> platforms;
 	private ArrayList<Platform> floor;
 	private ArrayList<Platform> ceilling;
@@ -48,10 +45,10 @@ public class Game extends GameThread implements IGame {
 	private Trap abyss[];
 	private Chronometer chronometer;
 
-	public Game(ScoreList scoreList) {
+	public Game(GameData data) {
 		super(INITIAL_VELOCITY);
 		chronometer = new Chronometer();
-		this.scoreList = scoreList;
+		this.data = data;
 	}
 
 	@Override
@@ -95,9 +92,9 @@ public class Game extends GameThread implements IGame {
 	private void gameOver() {
 		isExecute = false;
 		chronometer.stop();
-		scoreList.addCoins(calculateCoins());
-		scoreList.addScore(chronometer.getTime());
-		FileManager.saveScores(scoreList);
+		data.addCoins(calculateCoins());
+		data.addScore(chronometer.getTime());
+		FileManager.saveScores(data);
 	}
 
 	private int calculateCoins() {
@@ -281,11 +278,13 @@ public class Game extends GameThread implements IGame {
 		return isExecute;
 	}
 
+	@JsonIgnore
 	@Override
 	public boolean isDown() {
 		return player.isDown();
 	}
 
+	@JsonIgnore
 	@Override
 	public boolean isPause() {
 		return isPaused;
@@ -330,19 +329,26 @@ public class Game extends GameThread implements IGame {
 		return copyAbyss;
 	}
 
+	@JsonIgnore
 	@Override
 	public int[] getBestScore() {
-		return scoreList.getBestScore();
+		return data.getBestScore();
 	}
 
+	@JsonIgnore
 	@Override
 	public int getCoins() {
-		return scoreList.getCoins();
+		return data.getCoins();
 	}
 
 	@JsonIgnore
 	@Override
 	public int getParcialCoins() {
 		return calculateCoins();
+	}
+
+	@Override
+	public int getActualSkin() {
+		return data.getActualSkin();
 	}
 }
