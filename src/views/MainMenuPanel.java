@@ -25,12 +25,13 @@ import javax.swing.Timer;
 
 import buttons.Button;
 import buttons.TypeButton;
+import models.Game;
 import presenters.Command;
 
 public class MainMenuPanel extends JPanel {
 
-	private static final int TITLE_HEIGTH = 150;
-	private static final int TITLE_WIDTH = 900;
+	private static final int TITLE_HEIGTH = Game.MAP_HEIGTH/4;
+	private static final int TITLE_WIDTH = Game.MAP_WIDTH;
 	private static final Dimension BTN_PREFERRED_SIZE = new Dimension(200, 150);
 	private static final String IMG_MAIN_MENU_TITLE_PNG = "/res/img/mainMenuTitle.png";
 	private static final String IMG_HISTORY_PNG = "/res/img/history.png";

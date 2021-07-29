@@ -1,6 +1,7 @@
 package models;
 
 import java.awt.Point;
+import java.util.ArrayList;
 
 public interface IGame {
 
@@ -31,5 +32,7 @@ public interface IGame {
 	public boolean isExecute();
 
 	public int getActualSkin();
+
+	public ArrayList<Integer> getPurchasedSkins();
 
 }

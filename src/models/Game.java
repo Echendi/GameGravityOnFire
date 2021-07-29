@@ -1,6 +1,7 @@
 package models;
 
 import java.awt.Point;
+import java.awt.Toolkit;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -14,11 +15,11 @@ import persistence.FileManager;
 public class Game extends GameThread implements IGame {
 
 	private static final int SECONDS_PER_COIN = 2;
-	public static final int MAP_WIDTH = 900;
-	public static final int MAP_HEIGTH = 600;
+	public static final int MAP_WIDTH = Toolkit.getDefaultToolkit().getScreenSize().width - 100;
+	public static final int MAP_HEIGTH = Toolkit.getDefaultToolkit().getScreenSize().height - 100;
 	public static final int INITIAL_MAX_PLATFORMS = 10;
 	private static final int NO_COLLISION = -1;
-	private static final int CHANGE_DIFFICULTY_TIME = 15000;
+	private static final int CHANGE_DIFFICULTY_TIME = 10000;
 	private static final long INITIAL_VELOCITY = 5;
 	private static final int FLOOR_Y_POSITION = MAP_HEIGTH - 55;
 	private static final int CEILLING_Y_POSITION = 30;
@@ -94,7 +95,11 @@ public class Game extends GameThread implements IGame {
 		chronometer.stop();
 		data.addCoins(calculateCoins());
 		data.addScore(chronometer.getTime());
-		FileManager.saveScores(data);
+		saveData();
+	}
+
+	public void saveData() {
+		FileManager.saveGameData(data);
 	}
 
 	private int calculateCoins() {
@@ -274,6 +279,10 @@ public class Game extends GameThread implements IGame {
 		return new Point(x, y);
 	}
 
+	public void addSkin(int newSkin) {
+		data.addSkin(newSkin);
+	}
+
 	public boolean isExecute() {
 		return isExecute;
 	}
@@ -350,5 +359,18 @@ public class Game extends GameThread implements IGame {
 	@Override
 	public int getActualSkin() {
 		return data.getActualSkin();
+	}
+
+	@Override
+	public ArrayList<Integer> getPurchasedSkins() {
+		return data.getPurchasedSkins();
+	}
+
+	public void setSkin(int newSkin) {
+		data.changeSkin(newSkin);
+	}
+
+	public void discountCoins(int value) {
+		data.addCoins(value * -1);
 	}
 }

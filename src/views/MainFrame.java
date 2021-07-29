@@ -4,6 +4,13 @@ import java.awt.CardLayout;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyListener;
 import java.awt.geom.RoundRectangle2D;
+import java.io.IOException;
+
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -24,6 +31,7 @@ public class MainFrame extends JFrame {
 	private JPanel mainPanel;
 	private MainMenuPanel menuPanel;
 	private Timer timerUpdate;
+	private StoreDialog store;
 
 	public MainFrame(ActionListener listener, KeyListener keyListener) {
 		super(TITLE);
@@ -40,6 +48,7 @@ public class MainFrame extends JFrame {
 	}
 
 	private void initComponents(ActionListener listener, KeyListener keyListener) {
+		store = new StoreDialog(this);
 		addKeyListener(keyListener);
 
 		mainPanel = new JPanel(new CardLayout());
@@ -76,7 +85,7 @@ public class MainFrame extends JFrame {
 
 	public void refreshGame(IGame game) {
 		gamePanel.startMusic();
-		timerUpdate = new Timer(5, e -> {
+		timerUpdate = new Timer(1, e -> {
 			gamePanel.refreshGame(game);
 		});
 		timerUpdate.start();
@@ -99,5 +108,31 @@ public class MainFrame extends JFrame {
 	public void setActualSkin(int actualSkin) {
 		gamePanel.setActualSkin(actualSkin);
 	}
+
+	public void playChangeGravitySound() {
+		Clip clip;
+		try {
+			clip = AudioSystem.getClip();
+			AudioInputStream inputStream = AudioSystem
+					.getAudioInputStream(getClass().getResourceAsStream("/res/media/changeGravity.wav"));
+			clip.open(inputStream);
+			clip.start();
+		} catch (LineUnavailableException | UnsupportedAudioFileException | IOException e1) {
+			e1.printStackTrace();
+		}
+	}
+
+	public void loadStore(IGame game, ActionListener listener) {
+		store.loadStore(game, listener);
+	}
+
+	public void showStore(IGame game, ActionListener listener) {
+		loadStore(game, listener);
+		store.setVisible(true);
+	}
+
+//	public void buyElement(int elementPosition) {
+//		store.buyElement(elementPosition);
+//	}
 
 }

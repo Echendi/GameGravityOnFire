@@ -31,18 +31,17 @@ import presenters.Command;
 
 public class GamePanel extends JPanel {
 
-	private static final String COINS_FORMAT = " $ ";
+	private static final String IMG_PLAYER_PNG = "/res/img/players.png";
 	private static final String IMG_PLATFORM_2_PNG = "/res/img/platform2.png";
 	private static final String IMG_PLATFORM_1_PNG = "/res/img/platform1.png";
 	private static final String IMG_FIRE_PNG = "/res/img/fire.png";
-	private static final String IMG_PLAYER_PNG = "/res/img/players.png";
 	private static final String IMG_BACKGROUND_PNG = "/res/img/bg.png";
 	private static final String IMG_SPACE_PNG = "/res/img/space.png";
 
-	private static final Font BTN_PAUSE_FONT = new Font("Gill Sans Ultra Bold", Font.PLAIN, 15);
-	private static final Dimension BTN_PAUSE_DIMENSION = new Dimension(40, 22);
 	public static final String PLAY_TEXT = "\u00BB";
 	public static final String PAUSED_TEXT = "ll";
+	private static final Font BTN_PAUSE_FONT = new Font("Gill Sans Ultra Bold", Font.PLAIN, 15);
+	private static final Dimension BTN_PAUSE_DIMENSION = new Dimension(40, 22);
 
 	private static final Font BTN_OPTION_FONT = new Font("Gill Sans Ultra Bold", Font.PLAIN, 15);
 	private static final Dimension BTN_OPTION_DIMENSION = new Dimension(100, 22);
@@ -51,15 +50,17 @@ public class GamePanel extends JPanel {
 	private static final Font LBL_FONT = new Font("Bell MT", Font.PLAIN, 20);
 	private static final Color LBL_COLOR = Color.WHITE;
 	private static final String TIME_FORMAT = "00:00:00:00";
+	private static final String COINS_FORMAT = " $ ";
 
 	private static final int IMG_CITY_WIDTH = 3700;
 	private static final int Y_START_IMG_BG = 0;
 	private static final int Y_END_IMG_BG = 900;
 
-	private static final long serialVersionUID = 1L;
+	public static final int PLAYERS_QUANTITY = 11;
+	public static final int IMG_PLAYER_WIDTH = 30;
+	public static final int IMG_PLAYER_HEIGTH = 44;
 	private static final String MENU_TEXT = "MENU";
-	private static final int IMG_PLAYER_WIDTH = 30;
-	private static final int IMG_PLAYER_HEIGTH = 44;
+	private static final long serialVersionUID = 1L;
 
 	private BufferedImage gameScene;
 	private BufferedImage imgFire;
@@ -88,16 +89,19 @@ public class GamePanel extends JPanel {
 
 	public GamePanel() {
 		setLayout(new BorderLayout());
+		initGameOverClip();
+	}
+
+	private void initGameOverClip() {
 		try {
 			clipGameOver = AudioSystem.getClip();
 		} catch (LineUnavailableException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
 	public void initComponents(ActionListener listener) {
-		actualSkin = 0;
+//		actualSkin = 0;
 		isDown = true;
 		isPaused = false;
 		initSkins();
@@ -117,43 +121,38 @@ public class GamePanel extends JPanel {
 		panel.setOpaque(false);
 
 		initLblTime(panel);
-
-		initBtnPause(listener);
-		panel.add(btnPause);
-
+		initBtnPause(panel, listener);
 		initLblCoins(panel);
 
 		add(panel, BorderLayout.NORTH);
 	}
 
 	private void addOptionPanel(ActionListener listener) {
-		JPanel panel2 = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-		panel2.setOpaque(false);
+		JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+		panel.setOpaque(false);
 
-		btnMenu = new Button(TypeButton.WARNING, MENU_TEXT);
-		btnMenu.setPreferredSize(BTN_OPTION_DIMENSION);
-		btnMenu.setOpaque(false);
-		btnMenu.setFocusable(false);
-		btnMenu.addActionListener(listener);
-		btnMenu.setActionCommand(Command.MENU.toString());
-		btnMenu.setFont(BTN_OPTION_FONT);
-		btnMenu.setVisible(true);
-		panel2.add(btnMenu);
+		btnMenu = createOptionButton(TypeButton.WARNING, MENU_TEXT, Command.MENU, listener);
+		panel.add(btnMenu);
 
-		btnExit = new Button(TypeButton.DANGER, EXIT_TEXT);
-		btnExit.setPreferredSize(BTN_OPTION_DIMENSION);
-		btnExit.setOpaque(false);
-		btnExit.setFocusable(false);
-		btnExit.addActionListener(listener);
-		btnExit.setActionCommand(Command.EXIT.toString());
-		btnExit.setFont(BTN_OPTION_FONT);
-		btnExit.setVisible(true);
-		panel2.add(btnExit);
+		btnExit = createOptionButton(TypeButton.DANGER, EXIT_TEXT, Command.EXIT, listener);
+		panel.add(btnExit);
 
-		add(panel2, BorderLayout.SOUTH);
+		add(panel, BorderLayout.SOUTH);
 	}
 
-	private void initBtnPause(ActionListener listener) {
+	private Button createOptionButton(TypeButton type, String text, Command command, ActionListener listener) {
+		Button btn = new Button(type, text);
+		btn.setPreferredSize(BTN_OPTION_DIMENSION);
+		btn.setOpaque(false);
+		btn.setFocusable(false);
+		btn.addActionListener(listener);
+		btn.setActionCommand(command.toString());
+		btn.setFont(BTN_OPTION_FONT);
+		btn.setVisible(true);
+		return btn;
+	}
+
+	private void initBtnPause(JPanel panel, ActionListener listener) {
 		btnPause = new Button(TypeButton.SUCCESS, PAUSED_TEXT);
 		btnPause.setPreferredSize(BTN_PAUSE_DIMENSION);
 		btnPause.setOpaque(false);
@@ -162,7 +161,7 @@ public class GamePanel extends JPanel {
 		btnPause.setActionCommand(Command.PAUSE.toString());
 		btnPause.setFont(BTN_PAUSE_FONT);
 		btnPause.setVisible(true);
-
+		panel.add(btnPause);
 	}
 
 	private void initLblTime(JPanel panel) {
@@ -201,14 +200,13 @@ public class GamePanel extends JPanel {
 	}
 
 	private void initBackGroundSkins() throws IOException {
-		this.imgSpace = ImageIO.read(getClass().getResource(IMG_SPACE_PNG)).getSubimage(0, 0, Game.MAP_WIDTH,
-				Game.MAP_HEIGTH);
+		this.imgSpace = ImageIO.read(getClass().getResource(IMG_SPACE_PNG));
 		this.imgCity = ImageIO.read(getClass().getResource(IMG_BACKGROUND_PNG));
 	}
 
 	private void initPlayerSkins() throws IOException {
 		BufferedImage image = ImageIO.read(getClass().getResource(IMG_PLAYER_PNG));
-		playerSkins = new BufferedImage[11][6];
+		playerSkins = new BufferedImage[PLAYERS_QUANTITY][6];
 		createPlayerSkins(image);
 	}
 

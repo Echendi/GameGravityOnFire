@@ -53,7 +53,7 @@ public class FileManager {
 		}
 	}
 
-	public static GameData loadScoreList() {
+	public static GameData loadGameData() {
 		try {
 			final ObjectMapper mapper = new ObjectMapper();
 			GameData data = mapper.readValue(new File(DATA_PATH), GameData.class);
@@ -64,7 +64,7 @@ public class FileManager {
 		return null;
 	}
 
-	public static void saveScores(GameData data) {
+	public static void saveGameData(GameData data) {
 		final ObjectMapper mapper = new ObjectMapper();
 		mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
 		try {

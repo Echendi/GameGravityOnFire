@@ -52,6 +52,10 @@ public class GameData {
 		return actualSkin;
 	}
 
+	public ArrayList<Integer> getPurchasedSkins() {
+		return purchasedSkins;
+	}
+
 	public void changeSkin(int skin) {
 		actualSkin = skin;
 	}

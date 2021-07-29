@@ -4,18 +4,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.io.IOException;
 
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.UnsupportedAudioFileException;
-
+import buttons.Button;
 import models.Game;
 import persistence.FileManager;
 import views.GamePanel;
 import views.MainFrame;
+import views.StoreDialog;
 
 public class Presenter extends KeyAdapter implements ActionListener {
 
@@ -24,6 +19,7 @@ public class Presenter extends KeyAdapter implements ActionListener {
 
 	public Presenter() {
 		view = new MainFrame(this, this);
+		game = new Game(FileManager.loadGameData());
 		view.changeCard(MainFrame.MENU_CARD);
 	}
 
@@ -36,28 +32,46 @@ public class Presenter extends KeyAdapter implements ActionListener {
 		case START -> start();
 		case STORE -> showStore();
 		case MENU -> showMenu();
+		case BUY -> buyElement(e);
+		case USE -> useElement(e);
+		case NONE -> {
 		}
+		}
+	}
+
+	private void useElement(ActionEvent e) {
+		Button source = (Button) e.getSource();
+		game.setSkin(Integer.valueOf(source.getName()));
+		view.loadStore(game, this);
+		game.saveData();
+	}
+
+	private void buyElement(ActionEvent e) {
+		Button source = (Button) e.getSource();
+		game.addSkin(Integer.valueOf(source.getName()));
+		game.discountCoins(Integer.valueOf(source.getName())*StoreDialog.VALUE_INCREMENT);
+		view.loadStore(game, this);
+		game.saveData();
 	}
 
 	private void showMenu() {
 		view.stopGame();
 		view.changeCard(MainFrame.MENU_CARD);
 		game.stop();
-		game = null;
+		game = new Game(FileManager.loadGameData());
 	}
 
 	private void start() {
 		view.changeCard(MainFrame.GAME_CARD);
 		view.setVisibleLblGameOver(false);
 		view.resetCount();
-		game = new Game(FileManager.loadScoreList());
 		game.start();
 		view.setActualSkin(game.getActualSkin());
 		view.refreshGame(game);
 	}
 
 	private void showStore() {
-		// TODO Auto-generated method stub
+		view.showStore(game, this);
 	}
 
 	private void showInstrutions() {
@@ -90,20 +104,7 @@ public class Presenter extends KeyAdapter implements ActionListener {
 	private void changeGravity() {
 		if (game.isExecute() && !game.isPause()) {
 			game.changeGravity();
-			playChangeGravitySound();
-		}
-	}
-
-	private void playChangeGravitySound() {
-		Clip clip;
-		try {
-			clip = AudioSystem.getClip();
-			AudioInputStream inputStream = AudioSystem
-					.getAudioInputStream(getClass().getResourceAsStream("/res/media/changeGravity.wav"));
-			clip.open(inputStream);
-			clip.start();
-		} catch (LineUnavailableException | UnsupportedAudioFileException | IOException e1) {
-			e1.printStackTrace();
+			view.playChangeGravitySound();
 		}
 	}
 
