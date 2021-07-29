@@ -8,7 +8,6 @@ import java.awt.event.KeyEvent;
 import buttons.Button;
 import models.Game;
 import persistence.FileManager;
-import views.GamePanel;
 import views.MainFrame;
 import views.StoreDialog;
 
@@ -33,13 +32,11 @@ public class Presenter extends KeyAdapter implements ActionListener {
 		case STORE -> showStore();
 		case MENU -> showMenu();
 		case BUY -> buyElement(e);
-		case USE -> useElement(e);
-		case NONE -> {
-		}
+		case USE -> useSkin(e);
 		}
 	}
 
-	private void useElement(ActionEvent e) {
+	private void useSkin(ActionEvent e) {
 		Button source = (Button) e.getSource();
 		game.setSkin(Integer.valueOf(source.getName()));
 		view.loadStore(game, this);
@@ -49,7 +46,7 @@ public class Presenter extends KeyAdapter implements ActionListener {
 	private void buyElement(ActionEvent e) {
 		Button source = (Button) e.getSource();
 		game.addSkin(Integer.valueOf(source.getName()));
-		game.discountCoins(Integer.valueOf(source.getName())*StoreDialog.VALUE_INCREMENT);
+		game.discountCoins(Integer.valueOf(source.getName()) * StoreDialog.VALUE_INCREMENT);
 		view.loadStore(game, this);
 		game.saveData();
 	}
@@ -85,10 +82,8 @@ public class Presenter extends KeyAdapter implements ActionListener {
 	private synchronized void pause() {
 		if (game.isPause()) {
 			game.resume();
-			view.setBtnPauseText(GamePanel.PAUSED_TEXT);
 		} else {
 			game.pause();
-			view.setBtnPauseText(GamePanel.PLAY_TEXT);
 		}
 	}
 

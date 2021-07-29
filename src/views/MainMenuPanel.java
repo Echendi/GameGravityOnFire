@@ -8,6 +8,7 @@ import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
@@ -30,12 +31,21 @@ import presenters.Command;
 
 public class MainMenuPanel extends JPanel {
 
-	private static final int TITLE_HEIGTH = Game.MAP_HEIGTH/4;
+	private static final String BTN_MUSIC = "/res/media/button.wav";
+	private static final String MENU_MUSIC = "/res/media/menu.wav";
+	private static final Font FONT = new Font("Showcard Gothic", Font.PLAIN, 22);
+	private static final Color LBL_HISTORY_BG = new Color(0, 0, 0, 100);
+	private static final String PLAY_TEXT = "PLAY";
+	private static final String INSTRUCTIONS_TEXT = "INSTRUCCIONES";
+	private static final String STORE_TEXT = "TIENDA";
+	private static final String EXIT_TEXT = "SALIR";
+	private static final int TITLE_HEIGTH = Game.MAP_HEIGTH / 4;
 	private static final int TITLE_WIDTH = Game.MAP_WIDTH;
 	private static final Dimension BTN_PREFERRED_SIZE = new Dimension(200, 150);
 	private static final String IMG_MAIN_MENU_TITLE_PNG = "/res/img/mainMenuTitle.png";
 	private static final String IMG_HISTORY_PNG = "/res/img/history.png";
 	private static final String IMG_MAIN_MENU_BG_PNG = "/res/img/mainMenuBg.png";
+	private static final String IMG_FIRE_PNG = "/res/img/fireMenu.png";
 	private static final long serialVersionUID = 1L;
 
 	private BufferedImage backgroung;
@@ -55,21 +65,29 @@ public class MainMenuPanel extends JPanel {
 		this.setLayout(new BorderLayout());
 		initLblTitle();
 		initButtons(listener);
-		try {
-			BufferedImage image = ImageIO.read(getClass().getResource("/res/img/fireMenu.png"));
-			fireSkins = new BufferedImage[3];
-			fireSkins[0] = image.getSubimage(0, 0, 537, 128);
-			fireSkins[1] = image.getSubimage(0, 128, 537, 128);
-			fireSkins[2] = image.getSubimage(0, 256, 537, 128);
-			fire = fireSkins[0];
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		initFireSkins();
 		initTimer();
 	}
 
+	private void initFireSkins() {
+		try {
+			initImgs();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void initImgs() throws IOException {
+		BufferedImage image = ImageIO.read(getClass().getResource(IMG_FIRE_PNG));
+		fireSkins = new BufferedImage[3];
+		fireSkins[0] = image.getSubimage(0, 0, 537, 128);
+		fireSkins[1] = image.getSubimage(0, 128, 537, 128);
+		fireSkins[2] = image.getSubimage(0, 256, 537, 128);
+		fire = fireSkins[0];
+	}
+
 	private void initTimer() {
-		timer = new Timer(150, new ActionListener() {
+		timer = new Timer(100, new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -93,21 +111,33 @@ public class MainMenuPanel extends JPanel {
 		JPanel panel = new JPanel();
 		panel.setOpaque(false);
 
-		btnStart = createButton(TypeButton.SUCCESS, "PLAY", listener, Command.START.toString());
-		panel.add(btnStart);
-
-		btnIntructions = createButton(TypeButton.INFO, "INSTRUCCIONES", listener, Command.INSTRUCTIONS.toString());
-		panel.add(btnIntructions);
-
-		btnStore = createButton(TypeButton.PRIMARY, "TIENDA", listener, Command.STORE.toString());
-		panel.add(btnStore);
-
-		btnExit = createButton(TypeButton.DANGER, "SALIR", listener, Command.EXIT.toString());
-		panel.add(btnExit);
-
-		initLblHistory(panel);
+		addBtnStart(listener, panel);
+		addBtnInstructions(listener, panel);
+		addBtnStore(listener, panel);
+		addBtnExit(listener, panel);
+		addLblHistory(panel);
 
 		add(panel, BorderLayout.CENTER);
+	}
+
+	private void addBtnExit(ActionListener listener, JPanel panel) {
+		btnExit = createButton(TypeButton.DANGER, EXIT_TEXT, listener, Command.EXIT.toString());
+		panel.add(btnExit);
+	}
+
+	private void addBtnStore(ActionListener listener, JPanel panel) {
+		btnStore = createButton(TypeButton.PRIMARY, STORE_TEXT, listener, Command.STORE.toString());
+		panel.add(btnStore);
+	}
+
+	private void addBtnInstructions(ActionListener listener, JPanel panel) {
+		btnIntructions = createButton(TypeButton.INFO, INSTRUCTIONS_TEXT, listener, Command.INSTRUCTIONS.toString());
+		panel.add(btnIntructions);
+	}
+
+	private void addBtnStart(ActionListener listener, JPanel panel) {
+		btnStart = createButton(TypeButton.SUCCESS, PLAY_TEXT, listener, Command.START.toString());
+		panel.add(btnStart);
 	}
 
 	private void initLblTitle() {
@@ -118,13 +148,13 @@ public class MainMenuPanel extends JPanel {
 		add(lblTitle, BorderLayout.NORTH);
 	}
 
-	private void initLblHistory(JPanel panel) {
+	private void addLblHistory(JPanel panel) {
 		lblHistory = new JLabel();
 		Image icon = new ImageIcon(getClass().getResource(IMG_HISTORY_PNG)).getImage().getScaledInstance(TITLE_WIDTH,
 				TITLE_HEIGTH, Image.SCALE_SMOOTH);
 		lblHistory.setIcon(new ImageIcon(icon));
 		lblHistory.setOpaque(true);
-		lblHistory.setBackground(new Color(0, 0, 0, 100));
+		lblHistory.setBackground(LBL_HISTORY_BG);
 		panel.add(lblHistory);
 	}
 
@@ -135,32 +165,16 @@ public class MainMenuPanel extends JPanel {
 		button.setActionCommand(command);
 		button.setPreferredSize(BTN_PREFERRED_SIZE);
 		button.setOpaque(false);
-		button.setFont(new Font("Showcard Gothic", Font.PLAIN, 22));
+		button.setFont(FONT);
 		return button;
 	}
 
 	private MouseListener addMouseListener() {
-		return new MouseListener() {
 
-			@Override
-			public void mouseReleased(MouseEvent e) {
-			}
-
-			@Override
-			public void mousePressed(MouseEvent e) {
-			}
-
-			@Override
-			public void mouseExited(MouseEvent e) {
-			}
-
+		return new MouseAdapter() {
 			@Override
 			public void mouseEntered(MouseEvent e) {
 				playButtonSound();
-			}
-
-			@Override
-			public void mouseClicked(MouseEvent e) {
 			}
 		};
 	}
@@ -187,7 +201,7 @@ public class MainMenuPanel extends JPanel {
 				clip.stop();
 			}
 			AudioInputStream inputStream = AudioSystem
-					.getAudioInputStream(getClass().getResourceAsStream("/res/media/menu.wav"));
+					.getAudioInputStream(getClass().getResourceAsStream(MENU_MUSIC));
 			clip.open(inputStream);
 			clip.loop(Clip.LOOP_CONTINUOUSLY);
 		} catch (LineUnavailableException | UnsupportedAudioFileException | IOException e1) {
@@ -204,7 +218,7 @@ public class MainMenuPanel extends JPanel {
 		try {
 			buttonClip = AudioSystem.getClip();
 			AudioInputStream inputStream = AudioSystem
-					.getAudioInputStream(getClass().getResourceAsStream("/res/media/button.wav"));
+					.getAudioInputStream(getClass().getResourceAsStream(BTN_MUSIC));
 			buttonClip.open(inputStream);
 			buttonClip.start();
 		} catch (LineUnavailableException | UnsupportedAudioFileException | IOException e1) {

@@ -20,6 +20,7 @@ import models.IGame;
 
 public class MainFrame extends JFrame {
 
+	private static final String CHANGE_GRAVITY_MUSIC = "/res/media/changeGravity.wav";
 	public static final String MENU_CARD = "menu";
 	public static final String GAME_CARD = "game";
 	private static final String TITLE = "Gravity On Fire V.1.0";
@@ -44,7 +45,6 @@ public class MainFrame extends JFrame {
 		this.setUndecorated(true);
 		this.setShape(new RoundRectangle2D.Double(0, 0, this.getBounds().width, this.getBounds().height, 20, 20));
 		this.setVisible(true);
-
 	}
 
 	private void initComponents(ActionListener listener, KeyListener keyListener) {
@@ -61,7 +61,6 @@ public class MainFrame extends JFrame {
 		mainPanel.add(GAME_CARD, gamePanel);
 
 		this.getContentPane().add(mainPanel);
-
 	}
 
 	public void changeCard(String cardName) {
@@ -73,10 +72,6 @@ public class MainFrame extends JFrame {
 		}
 		card.show(mainPanel, cardName);
 		requestFocus();
-	}
-
-	public void setBtnPauseText(String text) {
-		this.gamePanel.setBtnPauseText(text);
 	}
 
 	public void setVisibleLblGameOver(boolean value) {
@@ -114,7 +109,7 @@ public class MainFrame extends JFrame {
 		try {
 			clip = AudioSystem.getClip();
 			AudioInputStream inputStream = AudioSystem
-					.getAudioInputStream(getClass().getResourceAsStream("/res/media/changeGravity.wav"));
+					.getAudioInputStream(getClass().getResourceAsStream(CHANGE_GRAVITY_MUSIC));
 			clip.open(inputStream);
 			clip.start();
 		} catch (LineUnavailableException | UnsupportedAudioFileException | IOException e1) {
@@ -130,9 +125,4 @@ public class MainFrame extends JFrame {
 		loadStore(game, listener);
 		store.setVisible(true);
 	}
-
-//	public void buyElement(int elementPosition) {
-//		store.buyElement(elementPosition);
-//	}
-
 }

@@ -9,6 +9,9 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import javax.imageio.ImageIO;
@@ -30,6 +33,10 @@ import models.Trap;
 import presenters.Command;
 
 public class GamePanel extends JPanel {
+
+	private static final String BUTTON_MUSIC = "/res/media/button.wav";
+	private static final String GAME_OVER_MUSIC = "/res/media/gameOver.wav";
+	private static final String GAME_MUSIC = "/res/media/gameMusic.wav";
 
 	private static final String IMG_PLAYER_PNG = "/res/img/players.png";
 	private static final String IMG_PLATFORM_2_PNG = "/res/img/platform2.png";
@@ -101,7 +108,6 @@ public class GamePanel extends JPanel {
 	}
 
 	public void initComponents(ActionListener listener) {
-//		actualSkin = 0;
 		isDown = true;
 		isPaused = false;
 		initSkins();
@@ -149,7 +155,17 @@ public class GamePanel extends JPanel {
 		btn.setActionCommand(command.toString());
 		btn.setFont(BTN_OPTION_FONT);
 		btn.setVisible(true);
+		btn.addMouseListener(createMouseListener());
 		return btn;
+	}
+
+	private MouseListener createMouseListener() {
+		return new MouseAdapter() {
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				playButtonSound();
+			}
+		};
 	}
 
 	private void initBtnPause(JPanel panel, ActionListener listener) {
@@ -161,6 +177,7 @@ public class GamePanel extends JPanel {
 		btnPause.setActionCommand(Command.PAUSE.toString());
 		btnPause.setFont(BTN_PAUSE_FONT);
 		btnPause.setVisible(true);
+		btnPause.addMouseListener(createMouseListener());
 		panel.add(btnPause);
 	}
 
@@ -177,10 +194,6 @@ public class GamePanel extends JPanel {
 		lblCoins.setForeground(LBL_COLOR);
 		lblCoins.setFont(LBL_FONT);
 		panel.add(lblCoins);
-	}
-
-	public void setBtnPauseText(String text) {
-		this.btnPause.setText(text);
 	}
 
 	public void setVisibleLblGameOver(boolean value) {
@@ -247,10 +260,13 @@ public class GamePanel extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (!isPaused) {
+					btnPause.setText(PAUSED_TEXT);
 					changeFireSkin();
 					changeCitySkin(count);
 					changePlayerSkin();
 					count = count + Game.MAP_WIDTH > IMG_CITY_WIDTH ? 0 : count + 1;
+				} else {
+					btnPause.setText(PLAY_TEXT);
 				}
 			}
 		});
@@ -259,8 +275,7 @@ public class GamePanel extends JPanel {
 	public void startMusic() {
 		try {
 			clip = AudioSystem.getClip();
-			AudioInputStream inputStream = AudioSystem
-					.getAudioInputStream(getClass().getResourceAsStream("/res/media/gameMusic.wav"));
+			AudioInputStream inputStream = AudioSystem.getAudioInputStream(getClass().getResourceAsStream(GAME_MUSIC));
 			clip.open(inputStream);
 			clip.loop(Clip.LOOP_CONTINUOUSLY);
 		} catch (LineUnavailableException | UnsupportedAudioFileException | IOException e1) {
@@ -402,7 +417,7 @@ public class GamePanel extends JPanel {
 				count++;
 				clipGameOver = AudioSystem.getClip();
 				AudioInputStream inputStream = AudioSystem
-						.getAudioInputStream(getClass().getResourceAsStream("/res/media/gameOver.wav"));
+						.getAudioInputStream(getClass().getResourceAsStream(GAME_OVER_MUSIC));
 				clipGameOver.open(inputStream);
 				clipGameOver.start();
 			}
@@ -418,5 +433,18 @@ public class GamePanel extends JPanel {
 
 	public void setActualSkin(int actualSkin) {
 		this.actualSkin = actualSkin;
+	}
+
+	private void playButtonSound() {
+		Clip buttonClip;
+		try {
+			buttonClip = AudioSystem.getClip();
+			AudioInputStream inputStream = AudioSystem
+					.getAudioInputStream(getClass().getResourceAsStream(BUTTON_MUSIC));
+			buttonClip.open(inputStream);
+			buttonClip.start();
+		} catch (LineUnavailableException | UnsupportedAudioFileException | IOException e1) {
+			e1.printStackTrace();
+		}
 	}
 }
