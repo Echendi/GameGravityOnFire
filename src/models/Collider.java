@@ -17,7 +17,7 @@ public abstract class Collider {
 		this.heigth = heigth;
 	}
 
-	public int getHeight() {
+	public int getHeigth() {
 		return heigth;
 	}
 

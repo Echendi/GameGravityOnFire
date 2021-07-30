@@ -1,156 +1,23 @@
 {
-  "isPlay" : false,
-  "isPaused" : false,
-  "maxPlatforms" : 14,
-  "velocity" : 1,
+  "maxPlatforms" : 10,
+  "isOver" : false,
+  "objectCollisionIndex" : [ -1, -1, -1, -1, -1, -1 ],
   "player" : {
-    "isColliding" : true,
-    "isFrontColliding" : true,
-    "x" : 89,
-    "y" : 323,
+    "isColliding" : false,
+    "isFrontColliding" : false,
     "isDown" : true,
-    "down" : true
+    "x" : 633,
+    "y" : 50
   },
-  "platforms" : [ {
-    "x" : -45,
-    "y" : 275,
-    "width" : 192,
-    "heigth" : 25,
-    "height" : 25
-  }, {
-    "x" : 97,
-    "y" : 411,
-    "width" : 101,
-    "heigth" : 25,
-    "height" : 25
-  }, {
-    "x" : 256,
-    "y" : 222,
-    "width" : 87,
-    "heigth" : 25,
-    "height" : 25
-  }, {
-    "x" : 218,
-    "y" : 191,
-    "width" : 208,
-    "heigth" : 25,
-    "height" : 25
-  }, {
-    "x" : 286,
-    "y" : 102,
-    "width" : 166,
-    "heigth" : 25,
-    "height" : 25
-  }, {
-    "x" : 99,
-    "y" : 372,
-    "width" : 54,
-    "heigth" : 25,
-    "height" : 25
-  }, {
-    "x" : 125,
-    "y" : 331,
-    "width" : 74,
-    "heigth" : 25,
-    "height" : 25
-  }, {
-    "x" : 882,
-    "y" : 277,
-    "width" : 93,
-    "heigth" : 25,
-    "height" : 25
-  }, {
-    "x" : 430,
-    "y" : 379,
-    "width" : 153,
-    "heigth" : 25,
-    "height" : 25
-  }, {
-    "x" : 1282,
-    "y" : 250,
-    "width" : 124,
-    "heigth" : 25,
-    "height" : 25
-  }, {
-    "x" : 1507,
-    "y" : 243,
-    "width" : 196,
-    "heigth" : 25,
-    "height" : 25
-  }, {
-    "x" : 1278,
-    "y" : 458,
-    "width" : 241,
-    "heigth" : 25,
-    "height" : 25
-  }, {
-    "x" : 1188,
-    "y" : 397,
-    "width" : 238,
-    "heigth" : 25,
-    "height" : 25
-  }, {
-    "x" : 806,
-    "y" : 153,
-    "width" : 120,
-    "heigth" : 25,
-    "height" : 25
-  } ],
-  "floor" : [ {
-    "x" : 44,
-    "y" : 510,
-    "width" : 908,
-    "heigth" : 25,
-    "height" : 25
-  } ],
-  "ceilling" : [ {
-    "x" : -201,
-    "y" : 30,
-    "width" : 227,
-    "heigth" : 25,
-    "height" : 25
-  }, {
-    "x" : 127,
-    "y" : 30,
-    "width" : 722,
-    "heigth" : 25,
-    "height" : 25
-  } ],
-  "fire" : {
-    "x" : 0,
-    "y" : 0,
-    "width" : 90,
-    "heigth" : 600,
-    "height" : 600
-  },
-  "abyss" : [ {
-    "x" : 0,
-    "y" : 0,
-    "width" : 900,
-    "heigth" : 30,
-    "height" : 30
-  }, {
-    "x" : 0,
-    "y" : 535,
-    "width" : 900,
-    "heigth" : 115,
-    "height" : 115
-  } ],
+  "platforms" : [ ],
+  "floor" : [ ],
+  "ceilling" : [ ],
   "chronometer" : {
-    "millis" : 4,
-    "seconds" : 57,
+    "millis" : 0,
+    "seconds" : 0,
     "minuts" : 0,
-    "hours" : 0,
-    "isRun" : false,
-    "isPaused" : false
+    "hours" : 0
   },
-  "platformCollision" : 5,
-  "platformForntCollision" : 6,
-  "floorCollision" : -1,
-  "floorFrontCollision" : -1,
-  "ceillingCollision" : -1,
-  "ceillingFrontCollision" : -1,
-  "play" : false,
-  "paused" : false,
-  "down" : true
+  "execute" : false,
+  "velocity" : 5
 }

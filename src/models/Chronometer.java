@@ -21,6 +21,14 @@ public class Chronometer extends GameThread {
 		hours = 0;
 	}
 
+	public Chronometer(int millis, int seconds, int minuts, int hours) {
+		super(TIMER_DELAY);
+		this.millis = millis;
+		this.seconds = seconds;
+		this.minuts = minuts;
+		this.hours = hours;
+	}
+
 	public void resetTime() {
 		millis = 0;
 		seconds = 0;

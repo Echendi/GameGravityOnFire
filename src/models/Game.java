@@ -7,6 +7,7 @@ import java.util.Random;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import persistence.FileManager;
@@ -19,8 +20,8 @@ public class Game extends GameThread implements IGame {
 	public static final int MAP_HEIGTH = Toolkit.getDefaultToolkit().getScreenSize().height - 100;
 	public static final int INITIAL_MAX_PLATFORMS = 10;
 	private static final int NO_COLLISION = -1;
-	private static final int CHANGE_DIFFICULTY_TIME = 10000;
-	private static final long INITIAL_VELOCITY = 5;
+	private static final int CHANGE_DIFFICULTY_TIME = 15000;
+	private static final int INITIAL_VELOCITY = 5;
 	private static final int FLOOR_Y_POSITION = MAP_HEIGTH - 55;
 	private static final int CEILLING_Y_POSITION = 30;
 	private static final int FIRE_HEIGTH = MAP_HEIGTH;
@@ -35,10 +36,13 @@ public class Game extends GameThread implements IGame {
 
 	@JsonIgnore
 	private long lapseOfTime;
+	@JsonIgnore
+	private GameData data;
+
 	private int maxPlatforms;
+	private boolean isOver;
 	private int[] objectCollisionIndex;
 	private Player player;
-	private GameData data;
 	private ArrayList<Platform> platforms;
 	private ArrayList<Platform> floor;
 	private ArrayList<Platform> ceilling;
@@ -50,6 +54,26 @@ public class Game extends GameThread implements IGame {
 		super(INITIAL_VELOCITY);
 		chronometer = new Chronometer();
 		this.data = data;
+		isExecute = false;
+		isOver = false;
+		initGame();
+	}
+
+	public Game(int maxPlatforms, boolean isOver, int[] objectCollisionIndex, Player player,
+			ArrayList<Platform> platforms, ArrayList<Platform> floor, ArrayList<Platform> ceilling,
+			Chronometer chronometer, int velocity, boolean execute) {
+		super(velocity);
+		this.maxPlatforms = maxPlatforms;
+		this.isOver = isOver;
+		this.objectCollisionIndex = objectCollisionIndex;
+		this.isExecute = execute;
+		this.chronometer = chronometer;
+		this.player = player;
+		this.platforms = platforms;
+		this.floor = floor;
+		this.ceilling = ceilling;
+		fire = new Trap(0, 0, FIRE_WIDTH, FIRE_HEIGTH);
+		createAbyss();
 	}
 
 	@Override
@@ -62,8 +86,9 @@ public class Game extends GameThread implements IGame {
 
 	private void initGame() {
 		maxPlatforms = INITIAL_MAX_PLATFORMS;
+		sleepTime = INITIAL_VELOCITY;
 		player = new Player();
-		isExecute = true;
+		chronometer.resetTime();
 		fire = new Trap(0, 0, FIRE_WIDTH, FIRE_HEIGTH);
 		initCollidersPlatforms();
 		createAbyss();
@@ -82,15 +107,18 @@ public class Game extends GameThread implements IGame {
 		super.pause();
 	}
 
-	@Override
-	public void start() {
-		initGame();
-		chronometer.resetTime();
+	public void start(boolean newGame) {
+		if (newGame) {
+			initGame();
+		}
 		initChronometer();
+		isExecute = true;
+		isOver = false;
 		super.start();
 	}
 
 	private void gameOver() {
+		isOver = true;
 		isExecute = false;
 		chronometer.stop();
 		data.addCoins(calculateCoins());
@@ -147,7 +175,7 @@ public class Game extends GameThread implements IGame {
 	public void increaseDifficulty() {
 		if (System.currentTimeMillis() - lapseOfTime > CHANGE_DIFFICULTY_TIME) {
 			sleepTime -= sleepTime > 1 ? 1 : 0;
-			maxPlatforms++;
+			maxPlatforms += 2;
 			lapseOfTime = System.currentTimeMillis();
 		}
 	}
@@ -256,17 +284,17 @@ public class Game extends GameThread implements IGame {
 
 	private void generateCeillingPlatform() {
 		ceilling.add(new Platform(Game.MAP_WIDTH, CEILLING_Y_POSITION,
-				randomGenerator.nextInt(Game.MAP_WIDTH) + Platform.MIN_WIDTH));
+				randomGenerator.nextInt(Game.MAP_WIDTH) + Platform.MIN_WIDTH, Platform.HEIGTH));
 	}
 
 	private void generateFloorPlatform() {
 		floor.add(new Platform(Game.MAP_WIDTH, FLOOR_Y_POSITION,
-				randomGenerator.nextInt(Game.MAP_WIDTH) + Platform.MIN_WIDTH));
+				randomGenerator.nextInt(Game.MAP_WIDTH) + Platform.MIN_WIDTH, Platform.HEIGTH));
 	}
 
 	private void generatePlatform() {
 		Point point = generatePoint();
-		platforms.add(new Platform(point.x, point.y, generatePlatformWidth()));
+		platforms.add(new Platform(point.x, point.y, generatePlatformWidth(), Platform.HEIGTH));
 	}
 
 	private int generatePlatformWidth() {
@@ -281,6 +309,18 @@ public class Game extends GameThread implements IGame {
 
 	public void addSkin(int newSkin) {
 		data.addSkin(newSkin);
+	}
+
+	public void setSkin(int newSkin) {
+		data.changeSkin(newSkin);
+	}
+
+	public void setData(GameData data) {
+		this.data = data;
+	}
+
+	public void discountCoins(int value) {
+		data.addCoins(value * -1);
 	}
 
 	public boolean isExecute() {
@@ -326,11 +366,13 @@ public class Game extends GameThread implements IGame {
 		return chronometer.getTime();
 	}
 
+	@JsonIgnore
 	@Override
 	public Trap getFire() {
 		return fire;
 	}
 
+	@JsonIgnore
 	@Override
 	public Trap[] getAbyss() {
 		Trap[] copyAbyss = new Trap[2];
@@ -356,21 +398,25 @@ public class Game extends GameThread implements IGame {
 		return calculateCoins();
 	}
 
+	@JsonIgnore
 	@Override
 	public int getActualSkin() {
 		return data.getActualSkin();
 	}
 
+	@JsonIgnore
 	@Override
 	public ArrayList<Integer> getPurchasedSkins() {
 		return data.getPurchasedSkins();
 	}
 
-	public void setSkin(int newSkin) {
-		data.changeSkin(newSkin);
-	}
+	@JsonIgnore
+	public boolean isOver() {
+		return isOver;
+	};
 
-	public void discountCoins(int value) {
-		data.addCoins(value * -1);
+	@JsonGetter
+	public int getVelocity() {
+		return sleepTime;
 	}
 }

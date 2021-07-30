@@ -1,13 +1,14 @@
 package models;
 
+
 public abstract class GameThread implements Runnable {
 
 	private Thread thread;
 	protected boolean isExecute;
 	protected boolean isPaused;
-	protected long sleepTime;
+	protected int sleepTime;
 
-	public GameThread(long sleepTime) {
+	public GameThread(int sleepTime) {
 		this.sleepTime = sleepTime;
 		this.isExecute = false;
 		this.thread = new Thread(this);
@@ -31,6 +32,10 @@ public abstract class GameThread implements Runnable {
 	public synchronized void resume() {
 		isPaused = false;
 		notifyAll();
+	}
+
+	public boolean isExecute() {
+		return isExecute;
 	}
 
 	protected abstract void executeTask();

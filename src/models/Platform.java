@@ -16,8 +16,8 @@ public class Platform extends Collider {
 		Platform.moveSize = moveSize;
 	}
 
-	public Platform(int x, int y, int width) {
-		super(x, y, width, HEIGTH);
+	public Platform(int x, int y, int width, int heigth) {
+		super(x, y, width, heigth);
 	}
 
 	public boolean move() {

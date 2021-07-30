@@ -38,6 +38,14 @@ public class Player {
 		isFrontColliding = false;
 	}
 
+	public Player(boolean isColliding, boolean isFrontColliding, boolean isDown, int x, int y) {
+		this.isColliding = isColliding;
+		this.isFrontColliding = isFrontColliding;
+		this.isDown = isDown;
+		this.x = x;
+		this.y = y;
+	}
+
 	public void changeGravity() {
 		isDown = !isDown;
 		y += isDown ? Y_MOVE_SIZE : Y_MOVE_SIZE * (-1);
@@ -64,20 +72,20 @@ public class Player {
 	}
 
 	private boolean checkLimits() {
-		return ((isDown && (y + HEIGTH + Y_MOVE_SIZE ) < Game.MAP_HEIGTH)) || (!isDown && y - Y_MOVE_SIZE > 0);
+		return ((isDown && (y + HEIGTH + Y_MOVE_SIZE) < Game.MAP_HEIGTH)) || (!isDown && y - Y_MOVE_SIZE > 0);
 	}
 
 	public boolean checkCollision(Collider collider) {
 		Rectangle playerRec = new Rectangle(x, y, WIDTH, HEIGTH);
 		boolean isCollision = playerRec.intersects(new Rectangle(collider.getPosition().x, collider.getPosition().y,
-				collider.getWidth(), collider.getHeight()));
+				collider.getWidth(), collider.getHeigth()));
 		return isCollision ? isColliding = true : isCollision;
 	}
 
 	public boolean checkFrontCollision(Collider collider) {
 		Rectangle playerRec = new Rectangle(x, y, WIDTH, HEIGTH);
 		boolean isCollision = playerRec.intersects(
-				new Rectangle(collider.getPosition().x - 2, collider.getPosition().y, 2, collider.getHeight()))
+				new Rectangle(collider.getPosition().x - 2, collider.getPosition().y, 2, collider.getHeigth()))
 				&& !checkCollision(collider);
 		return isCollision ? isFrontColliding = true : isCollision;
 	}

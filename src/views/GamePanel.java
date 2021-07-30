@@ -352,7 +352,7 @@ public class GamePanel extends JPanel {
 	private void paintFire(Trap fire) {
 		Graphics g = gameScene.getGraphics();
 		g.drawImage(imgFire, fire.getPosition().x, fire.getPosition().y, fire.getWidth() + (Player.WIDTH * 2),
-				fire.getHeight(), this);
+				fire.getHeigth(), this);
 
 	}
 
@@ -381,11 +381,9 @@ public class GamePanel extends JPanel {
 
 	private void paintBackground() {
 		if (gameScene == null) {
-			gameScene = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
+			gameScene = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
 		}
 		Graphics g = gameScene.getGraphics();
-		g.setColor(LBL_COLOR);
-		g.fillRect(0, 0, getWidth(), getHeight());
 		g.drawImage(imgSpace, 0, 0, getWidth(), getHeight(), this);
 		g.drawImage(skinCity, 0, 40, getWidth(), getHeight() - 80, this);
 	}

@@ -5,8 +5,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
+import javax.swing.JOptionPane;
+
 import buttons.Button;
 import models.Game;
+import models.GameThread;
 import persistence.FileManager;
 import views.MainFrame;
 import views.StoreDialog;
@@ -15,11 +18,23 @@ public class Presenter extends KeyAdapter implements ActionListener {
 
 	private MainFrame view;
 	private Game game;
+	private GameThread threadAutoSave;
 
 	public Presenter() {
 		view = new MainFrame(this, this);
 		game = new Game(FileManager.loadGameData());
 		view.changeCard(MainFrame.MENU_CARD);
+		createAutoSaveThread();
+	}
+
+	private void createAutoSaveThread() {
+		threadAutoSave = new GameThread(5000) {
+
+			@Override
+			protected void executeTask() {
+				saveGame();
+			}
+		};
 	}
 
 	@Override
@@ -27,7 +42,7 @@ public class Presenter extends KeyAdapter implements ActionListener {
 		switch (Command.valueOf(e.getActionCommand())) {
 		case PAUSE -> pause();
 		case EXIT -> exit();
-		case INSTRUCTIONS -> showInstrutions();
+		case INSTRUCTIONS -> showInstructions();
 		case START -> start();
 		case STORE -> showStore();
 		case MENU -> showMenu();
@@ -52,38 +67,83 @@ public class Presenter extends KeyAdapter implements ActionListener {
 	}
 
 	private void showMenu() {
+		saveGame();
 		view.stopGame();
 		view.changeCard(MainFrame.MENU_CARD);
 		game.stop();
-		game = new Game(FileManager.loadGameData());
+		threadAutoSave.pause();
 	}
 
 	private void start() {
+		initGame();
 		view.changeCard(MainFrame.GAME_CARD);
 		view.setVisibleLblGameOver(false);
 		view.resetCount();
-		game.start();
+		initAutoSave();
 		view.setActualSkin(game.getActualSkin());
 		view.refreshGame(game);
+	}
+
+	private void initGame() {
+		game = FileManager.loadGame();
+		if (game != null) {
+			if (!game.isOver() && game.isExecute()) {
+				int option = view.showMessageGameSaved(game.getTime());
+				if (option == JOptionPane.NO_OPTION) {
+					newGame();
+				} else {
+					game.start(false);
+				}
+			} else {
+				newGame();
+			}
+		} else {
+			newGame();
+		}
+	}
+
+	private void newGame() {
+		game = new Game(FileManager.loadGameData());
+		game.start(true);
+	}
+
+	private void initAutoSave() {
+		if (threadAutoSave.isExecute()) {
+			threadAutoSave.resume();
+		} else {
+			threadAutoSave.start();
+		}
 	}
 
 	private void showStore() {
 		view.showStore(game, this);
 	}
 
-	private void showInstrutions() {
-		// TODO Auto-generated method stub
+	private void showInstructions() {
+		view.showInstructions();
 	}
 
 	private void exit() {
+		saveGame();
 		view.exit();
+	}
+
+	private void saveGame() {
+		if (!game.isOver() && game.isExecute()) {
+			FileManager.saveGame(game);
+		} else if (game.isOver()) {
+			game = new Game(FileManager.loadGameData());
+			FileManager.saveGame(game);
+		}
 	}
 
 	private synchronized void pause() {
 		if (game.isPause()) {
 			game.resume();
+			threadAutoSave.resume();
 		} else {
 			game.pause();
+			threadAutoSave.pause();
 		}
 	}
 
@@ -102,5 +162,4 @@ public class Presenter extends KeyAdapter implements ActionListener {
 			view.playChangeGravitySound();
 		}
 	}
-
 }

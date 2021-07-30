@@ -13,6 +13,7 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 import models.Game;
@@ -33,6 +34,7 @@ public class MainFrame extends JFrame {
 	private MainMenuPanel menuPanel;
 	private Timer timerUpdate;
 	private StoreDialog store;
+	private InstructionDialog instructions;
 
 	public MainFrame(ActionListener listener, KeyListener keyListener) {
 		super(TITLE);
@@ -49,6 +51,7 @@ public class MainFrame extends JFrame {
 
 	private void initComponents(ActionListener listener, KeyListener keyListener) {
 		store = new StoreDialog(this);
+		instructions = new InstructionDialog(this);
 		addKeyListener(keyListener);
 
 		mainPanel = new JPanel(new CardLayout());
@@ -80,7 +83,7 @@ public class MainFrame extends JFrame {
 
 	public void refreshGame(IGame game) {
 		gamePanel.startMusic();
-		timerUpdate = new Timer(1, e -> {
+		timerUpdate = new Timer(5, e -> {
 			gamePanel.refreshGame(game);
 		});
 		timerUpdate.start();
@@ -124,5 +127,16 @@ public class MainFrame extends JFrame {
 	public void showStore(IGame game, ActionListener listener) {
 		loadStore(game, listener);
 		store.setVisible(true);
+	}
+
+	public void showInstructions() {
+		instructions.setVisible(true);
+	}
+
+	public int showMessageGameSaved(int[] time) {
+		return JOptionPane.showConfirmDialog(
+				this, "Existe un juego guardado con tiempo de " + time[0] + " hrs " + time[1] + "min " + time[2]
+						+ " seg y " + time[3] + " centécimas. ¿Desea Reaunudarlo?",
+				"AUTOSAVE INFO", JOptionPane.YES_NO_OPTION);
 	}
 }
