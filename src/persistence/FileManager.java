@@ -90,7 +90,7 @@ public class FileManager {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return null;
+		return new GameData();
 	}
 
 	public static void saveGameData(GameData data) {

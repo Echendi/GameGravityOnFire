@@ -88,7 +88,7 @@ public class MainFrame extends JFrame {
 	}
 
 	public void refreshGame(IGame game) {
-		gamePanel.startMusic();
+		gamePanel.startMusic(isSoundEnable());
 		timerUpdate = new Timer(0, e -> {
 			gamePanel.refreshGame(game);
 		});
@@ -169,6 +169,20 @@ public class MainFrame extends JFrame {
 
 	public void backImage() {
 		screenshots.backImage();
+	}
+
+	public void startMusic() {
+		menuPanel.changeToSoundEnable();
+		menuPanel.startMenuMusic();
+	}
+
+	private boolean isSoundEnable() {
+		return menuPanel.isSoundEnable();
+	}
+
+	public void stopMusic() {
+		menuPanel.changeToSoundDisable();
+		menuPanel.stopMenuMusic();
 	}
 
 }

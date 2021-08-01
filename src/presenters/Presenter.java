@@ -56,7 +56,17 @@ public class Presenter extends KeyAdapter implements ActionListener {
 		case BACK -> back();
 		case NEXT -> next();
 		case SCREENSHOT -> showScreenshots();
+		case SOUND_DISABLE -> soundDisable();
+		case SOUND_ENABLE ->soundEnable();
 		}
+	}
+
+	private void soundEnable() {
+		view.startMusic();
+	}
+
+	private void soundDisable() {
+		view.stopMusic();
 	}
 
 	private void showScreenshots() {

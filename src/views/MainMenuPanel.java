@@ -3,9 +3,11 @@ package views;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -20,6 +22,7 @@ import javax.sound.sampled.Clip;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -31,6 +34,8 @@ import presenters.Command;
 
 public class MainMenuPanel extends JPanel {
 
+	public static final String SOUND_ENABLE_ICON = "/res/img/soundEnable.png";
+	public static final String SOUND_DISABLE_ICON = "/res/img/soundDisable.png";
 	private static final String BTN_MUSIC = "/res/media/button.wav";
 	private static final String MENU_MUSIC = "/res/media/menu.wav";
 	private static final Font FONT = new Font("Showcard Gothic", Font.PLAIN, 22);
@@ -57,8 +62,10 @@ public class MainMenuPanel extends JPanel {
 	private Button btnIntructions;
 	private Button btnStore;
 	private Button btnExit;
+	private JButton btnSound;
 	private Timer timer;
 	private Clip clip;
+	private boolean soundEnable;
 
 	public MainMenuPanel(ActionListener listener) {
 		initBackground();
@@ -67,6 +74,7 @@ public class MainMenuPanel extends JPanel {
 		initButtons(listener);
 		initFireSkins();
 		initTimer();
+		soundEnable = true;
 	}
 
 	private void initFireSkins() {
@@ -117,7 +125,26 @@ public class MainMenuPanel extends JPanel {
 		addBtnExit(listener, panel);
 		addLblHistory(panel);
 
+		createBtnSound(listener);
+
 		add(panel, BorderLayout.CENTER);
+	}
+
+	private void createBtnSound(ActionListener listener) {
+		JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+		panel.setOpaque(false);
+		btnSound = new JButton(new ImageIcon(new ImageIcon((getClass().getResource(SOUND_ENABLE_ICON))).getImage()
+				.getScaledInstance(50, 50, Image.SCALE_SMOOTH)));
+		btnSound.setBorderPainted(false);
+		btnSound.setFocusPainted(false);
+		btnSound.setContentAreaFilled(false);
+		btnSound.setOpaque(false);
+		btnSound.setBackground(new Color(0, 0, 0, 0));
+		btnSound.setMargin(new Insets(0, 0, 0, 0));
+		btnSound.addActionListener(listener);
+		btnSound.setActionCommand(Command.SOUND_DISABLE.toString());
+		panel.add(btnSound);
+		add(panel, BorderLayout.SOUTH);
 	}
 
 	private void addBtnExit(ActionListener listener, JPanel panel) {
@@ -194,35 +221,56 @@ public class MainMenuPanel extends JPanel {
 		g.drawImage(fire, 0, getHeight() - 300, getWidth(), 330, this);
 	}
 
-	private void startMenuMusic() {
-		try {
-			clip = AudioSystem.getClip();
-			if (clip.isRunning()) {
-				clip.stop();
+	public void startMenuMusic() {
+		if (isSoundEnable()) {
+			try {
+				clip = AudioSystem.getClip();
+				if (clip.isRunning()) {
+					clip.stop();
+				}
+				AudioInputStream inputStream = AudioSystem
+						.getAudioInputStream(getClass().getResourceAsStream(MENU_MUSIC));
+				clip.open(inputStream);
+				clip.loop(Clip.LOOP_CONTINUOUSLY);
+			} catch (LineUnavailableException | UnsupportedAudioFileException | IOException e1) {
+				e1.printStackTrace();
 			}
-			AudioInputStream inputStream = AudioSystem
-					.getAudioInputStream(getClass().getResourceAsStream(MENU_MUSIC));
-			clip.open(inputStream);
-			clip.loop(Clip.LOOP_CONTINUOUSLY);
-		} catch (LineUnavailableException | UnsupportedAudioFileException | IOException e1) {
-			e1.printStackTrace();
 		}
 	}
 
-	private void stopMenuMusic() {
-		clip.stop();
+	public void stopMenuMusic() {
+		if (clip != null) {
+			clip.stop();
+		}
 	}
 
 	private void playButtonSound() {
 		Clip buttonClip;
 		try {
 			buttonClip = AudioSystem.getClip();
-			AudioInputStream inputStream = AudioSystem
-					.getAudioInputStream(getClass().getResourceAsStream(BTN_MUSIC));
+			AudioInputStream inputStream = AudioSystem.getAudioInputStream(getClass().getResourceAsStream(BTN_MUSIC));
 			buttonClip.open(inputStream);
 			buttonClip.start();
 		} catch (LineUnavailableException | UnsupportedAudioFileException | IOException e1) {
 			e1.printStackTrace();
 		}
+	}
+
+	public void changeToSoundEnable() {
+		soundEnable = true;
+		btnSound.setActionCommand(Command.SOUND_DISABLE.toString());
+		btnSound.setIcon(new ImageIcon(new ImageIcon((getClass().getResource(SOUND_ENABLE_ICON))).getImage()
+				.getScaledInstance(50, 50, Image.SCALE_SMOOTH)));
+	}
+
+	public void changeToSoundDisable() {
+		soundEnable = false;
+		btnSound.setActionCommand(Command.SOUND_ENABLE.toString());
+		btnSound.setIcon(new ImageIcon(new ImageIcon((getClass().getResource(SOUND_DISABLE_ICON))).getImage()
+				.getScaledInstance(50, 50, Image.SCALE_SMOOTH)));
+	}
+
+	public boolean isSoundEnable() {
+		return soundEnable;
 	}
 }

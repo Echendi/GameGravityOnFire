@@ -283,14 +283,17 @@ public class GamePanel extends JPanel {
 		});
 	}
 
-	public void startMusic() {
-		try {
-			clip = AudioSystem.getClip();
-			AudioInputStream inputStream = AudioSystem.getAudioInputStream(getClass().getResourceAsStream(GAME_MUSIC));
-			clip.open(inputStream);
-			clip.loop(Clip.LOOP_CONTINUOUSLY);
-		} catch (LineUnavailableException | UnsupportedAudioFileException | IOException e1) {
-			e1.printStackTrace();
+	public void startMusic(boolean startMusic) {
+		if (startMusic) {
+			try {
+				clip = AudioSystem.getClip();
+				AudioInputStream inputStream = AudioSystem
+						.getAudioInputStream(getClass().getResourceAsStream(GAME_MUSIC));
+				clip.open(inputStream);
+				clip.loop(Clip.LOOP_CONTINUOUSLY);
+			} catch (LineUnavailableException | UnsupportedAudioFileException | IOException e1) {
+				e1.printStackTrace();
+			}
 		}
 		timer.start();
 	}
@@ -345,7 +348,9 @@ public class GamePanel extends JPanel {
 		isPaused = game.isPause();
 		if (!game.isExecute()) {
 			timer.stop();
-			clip.stop();
+			if (clip != null) {
+				clip.stop();
+			}
 			showBtnScreenshot(true);
 			showGameOverPanel(game);
 		}
@@ -419,7 +424,8 @@ public class GamePanel extends JPanel {
 	}
 
 	public void stopMusic() {
-		clip.stop();
+		if (clip != null)
+			clip.stop();
 	}
 
 	private void startGameOverMusic() {
