@@ -51,7 +51,7 @@ public class GamePanel extends JPanel {
 	private static final Dimension BTN_PAUSE_DIMENSION = new Dimension(40, 22);
 
 	private static final Font BTN_OPTION_FONT = new Font("Gill Sans Ultra Bold", Font.PLAIN, 15);
-	private static final Dimension BTN_OPTION_DIMENSION = new Dimension(100, 22);
+	private static final Dimension BTN_OPTION_DIMENSION = new Dimension(120, 22);
 	public static final String EXIT_TEXT = "SALIR";
 
 	private static final Font LBL_FONT = new Font("Bell MT", Font.PLAIN, 20);
@@ -68,8 +68,10 @@ public class GamePanel extends JPanel {
 	public static final int IMG_PLAYER_HEIGTH = 44;
 	private static final String MENU_TEXT = "MENU";
 	private static final long serialVersionUID = 1L;
+	private static final String SCREENSHOT_TEXT = "CAPTURAS";
 
 	private BufferedImage gameScene;
+	private BufferedImage screenshot;
 	private BufferedImage imgFire;
 	private BufferedImage[] fireSkins;
 	private BufferedImage imgSpace;
@@ -93,6 +95,7 @@ public class GamePanel extends JPanel {
 	private boolean isPaused;
 	private Clip clipGameOver;
 	private int count;
+	private Button btnScreenshots;
 
 	public GamePanel() {
 		setLayout(new BorderLayout());
@@ -137,6 +140,10 @@ public class GamePanel extends JPanel {
 		JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 		panel.setOpaque(false);
 
+		btnScreenshots = createOptionButton(TypeButton.PRIMARY, SCREENSHOT_TEXT, Command.SCREENSHOT, listener);
+		btnScreenshots.setVisible(false);
+		panel.add(btnScreenshots);
+
 		btnMenu = createOptionButton(TypeButton.WARNING, MENU_TEXT, Command.MENU, listener);
 		panel.add(btnMenu);
 
@@ -144,6 +151,10 @@ public class GamePanel extends JPanel {
 		panel.add(btnExit);
 
 		add(panel, BorderLayout.SOUTH);
+	}
+
+	public void showBtnScreenshot(boolean isVisible) {
+		btnScreenshots.setVisible(isVisible);
 	}
 
 	private Button createOptionButton(TypeButton type, String text, Command command, ActionListener listener) {
@@ -326,6 +337,7 @@ public class GamePanel extends JPanel {
 		updateLblTime(game.getTime());
 		updateLblCoins(game.getCoins());
 		repaint();
+		setScreenshot();
 	}
 
 	private void verifyState(IGame game) {
@@ -334,6 +346,7 @@ public class GamePanel extends JPanel {
 		if (!game.isExecute()) {
 			timer.stop();
 			clip.stop();
+			showBtnScreenshot(true);
 			showGameOverPanel(game);
 		}
 	}
@@ -444,5 +457,14 @@ public class GamePanel extends JPanel {
 		} catch (LineUnavailableException | UnsupportedAudioFileException | IOException e1) {
 			e1.printStackTrace();
 		}
+	}
+
+	public void setScreenshot() {
+		screenshot = new BufferedImage(this.getWidth(), this.getHeight(), BufferedImage.TYPE_INT_RGB);
+		this.paint(screenshot.getGraphics());
+	}
+
+	public BufferedImage getScreenshot() {
+		return screenshot;
 	}
 }

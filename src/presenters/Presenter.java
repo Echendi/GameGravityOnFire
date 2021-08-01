@@ -4,9 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-
 import javax.swing.JOptionPane;
-
 import buttons.Button;
 import models.Game;
 import models.GameThread;
@@ -16,22 +14,29 @@ import views.StoreDialog;
 
 public class Presenter extends KeyAdapter implements ActionListener {
 
+	private static final int AUTO_SAVE_TIME = 10000;
 	private MainFrame view;
 	private Game game;
 	private GameThread threadAutoSave;
 
 	public Presenter() {
-		view = new MainFrame(this, this);
 		game = new Game(FileManager.loadGameData());
+		view = new MainFrame(this, this);
 		view.changeCard(MainFrame.MENU_CARD);
 		createAutoSaveThread();
 	}
 
 	private void createAutoSaveThread() {
-		threadAutoSave = new GameThread(5000) {
+		threadAutoSave = new GameThread(AUTO_SAVE_TIME) {
+			int count = 0;
 
 			@Override
 			protected void executeTask() {
+				if (count != 0 && !game.isOver()) {
+					view.screenshot(count++);
+				} else {
+					count++;
+				}
 				saveGame();
 			}
 		};
@@ -48,7 +53,22 @@ public class Presenter extends KeyAdapter implements ActionListener {
 		case MENU -> showMenu();
 		case BUY -> buyElement(e);
 		case USE -> useSkin(e);
+		case BACK -> back();
+		case NEXT -> next();
+		case SCREENSHOT -> showScreenshots();
 		}
+	}
+
+	private void showScreenshots() {
+		view.showScreenshots(FileManager.getImgsList());
+	}
+
+	private void next() {
+		view.nextImage();
+	}
+
+	private void back() {
+		view.backImage();
 	}
 
 	private void useSkin(ActionEvent e) {
@@ -81,6 +101,7 @@ public class Presenter extends KeyAdapter implements ActionListener {
 		view.resetCount();
 		initAutoSave();
 		view.setActualSkin(game.getActualSkin());
+		view.showBtnScreenshot(false);
 		view.refreshGame(game);
 	}
 
@@ -103,6 +124,7 @@ public class Presenter extends KeyAdapter implements ActionListener {
 	}
 
 	private void newGame() {
+		FileManager.resetGalleryFolder();
 		game = new Game(FileManager.loadGameData());
 		game.start(true);
 	}
@@ -134,6 +156,7 @@ public class Presenter extends KeyAdapter implements ActionListener {
 		} else if (game.isOver()) {
 			game = new Game(FileManager.loadGameData());
 			FileManager.saveGame(game);
+			threadAutoSave.pause();
 		}
 	}
 
@@ -162,4 +185,5 @@ public class Presenter extends KeyAdapter implements ActionListener {
 			view.playChangeGravitySound();
 		}
 	}
+
 }

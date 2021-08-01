@@ -4,8 +4,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+
+import javax.swing.ImageIcon;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
@@ -26,8 +29,46 @@ import models.GameData;
 import models.Platform;
 
 public class FileManager {
+	private static final String DATA_GALLERY = "data/gallery";
 	public static final String GAME_PATH = "data/gameSaved.json";
 	public static final String DATA_PATH = "data/gameData.json";
+	public static final String GALLERY_PATH = "data/gallery/";
+
+	public static ArrayList<ImageIcon> getImgsList() {
+		File directory = new File(GALLERY_PATH);
+		String list[] = directory.list();
+		ArrayList<ImageIcon> images = new ArrayList<>();
+		if (list != null) {
+			for (String file : list) {
+				int pos = file.lastIndexOf(".");
+				String extension = file.substring(pos < 0 ? 0 : pos, file.length()).toLowerCase();
+				if (extension.contains("png")) {
+					images.add(new ImageIcon(GALLERY_PATH + file));
+				}
+			}
+		}
+		return images;
+	}
+
+	public static void resetGalleryFolder() {
+		try {
+			File directory = new File(DATA_GALLERY);
+			if (directory.exists()) {
+				Files.walk(Paths.get(DATA_GALLERY)).map(Path::toFile).forEach(File::delete);
+			} else {
+				directory.mkdir();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void createGalleryFolder() {
+		File directory = new File(DATA_GALLERY);
+		if (!directory.exists()) {
+			directory.mkdir();
+		}
+	}
 
 	private static class IgnoreInheritedIntrospector extends JacksonAnnotationIntrospector {
 		private static final long serialVersionUID = 1L;
@@ -38,6 +79,7 @@ public class FileManager {
 					&& m.getDeclaringClass() != Collider.class && m.getDeclaringClass() != Chronometer.class)
 					|| super.hasIgnoreMarker(m);
 		}
+
 	}
 
 	public static GameData loadGameData() {
@@ -95,6 +137,7 @@ public class FileManager {
 			JsonParser parser = new JsonParser();
 			JsonObject object = parser.parse(text).getAsJsonObject();
 			Game game = getGame(object);
+			game.setData(loadGameData());
 			return game;
 		} catch (Exception ex) {
 			System.out.println(ex.toString());

@@ -4,8 +4,11 @@ import java.awt.CardLayout;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyListener;
 import java.awt.geom.RoundRectangle2D;
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
+import javax.imageio.ImageIO;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
@@ -18,6 +21,7 @@ import javax.swing.JPanel;
 import javax.swing.Timer;
 import models.Game;
 import models.IGame;
+import persistence.FileManager;
 
 public class MainFrame extends JFrame {
 
@@ -35,6 +39,7 @@ public class MainFrame extends JFrame {
 	private Timer timerUpdate;
 	private StoreDialog store;
 	private InstructionDialog instructions;
+	private ScreenshotDialog screenshots;
 
 	public MainFrame(ActionListener listener, KeyListener keyListener) {
 		super(TITLE);
@@ -52,10 +57,11 @@ public class MainFrame extends JFrame {
 	private void initComponents(ActionListener listener, KeyListener keyListener) {
 		store = new StoreDialog(this);
 		instructions = new InstructionDialog(this);
+		screenshots = new ScreenshotDialog(this);
+		screenshots.init(listener);
 		addKeyListener(keyListener);
 
 		mainPanel = new JPanel(new CardLayout());
-
 		menuPanel = new MainMenuPanel(listener);
 		mainPanel.add(MENU_CARD, menuPanel);
 
@@ -83,7 +89,7 @@ public class MainFrame extends JFrame {
 
 	public void refreshGame(IGame game) {
 		gamePanel.startMusic();
-		timerUpdate = new Timer(5, e -> {
+		timerUpdate = new Timer(0, e -> {
 			gamePanel.refreshGame(game);
 		});
 		timerUpdate.start();
@@ -133,10 +139,36 @@ public class MainFrame extends JFrame {
 		instructions.setVisible(true);
 	}
 
+	public void showScreenshots(ArrayList<ImageIcon> gallery) {
+		screenshots.showScreenshots(gallery);
+	}
+
+	public void showBtnScreenshot(boolean isVisible) {
+		gamePanel.showBtnScreenshot(isVisible);
+	}
+
 	public int showMessageGameSaved(int[] time) {
 		return JOptionPane.showConfirmDialog(
 				this, "Existe un juego guardado con tiempo de " + time[0] + " hrs " + time[1] + "min " + time[2]
 						+ " seg y " + time[3] + " centécimas. ¿Desea Reaunudarlo?",
 				"AUTOSAVE INFO", JOptionPane.YES_NO_OPTION);
 	}
+
+	public void screenshot(int count) {
+		try {
+			FileManager.createGalleryFolder();
+			ImageIO.write(gamePanel.getScreenshot(), "png", new File("data/gallery/captura" + count + ".png"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void nextImage() {
+		screenshots.nextImage();
+	}
+
+	public void backImage() {
+		screenshots.backImage();
+	}
+
 }
